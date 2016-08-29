@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="normalize.css">
+	<style>
+		#container{
+			margin-left: 10px;
+			margin-top: 10px;
+		}
+		#cols{
+			margin: 0;
+			padding: 0;
+		}
+		#cols > li{
+			text-decoration: none;
+			display: inline-block;
+			text-align: center;
+			white-space:nowrap; 
+			overflow:hidden;
+			text-overflow: ellipsis;
+			background-color: #EEEEEE;
+			font: 12px arial;
+			
+		}
+		#rolagem{
+			width: 25px;
+			height: 600px;
+			border:1px solid #737373;
+			position: relative;
+			float: right;
+			visibility: hidden;
+		}
+		#rolagem  span{
+			display: block;
+			width: 25px;
+			height: 30px;
+			position: absolute;
+			border: 1px solid #737373;
+			
+		}
+		#rolagem span:first-child{
+			top: 0;
+		}
+		#rolagem span:last-child{
+			bottom: 0;
+		}
+		#barra{
+			display: block;
+			width: auto;
+			height: 10px;
+			background-color: #EEEEEE;;
+			border:1px solid #737373;
+			position: relative;
+			padding: auto;
+			text-align: center;
+		}
+		#range{
+			margin: 4px;
+			//*visibility: hidden;*/
+		}
+
+		#scale {
+			width: 850px;
+			height: 20px;
+			position: relative;
+			margin-top: 5px;
+			margin-left: 30px;
+			display: block;
+
+		}
+		#scale > div{
+			width: 8px;
+			height: 10px;
+			display: inline-block;
+		}
+		#scale:before{
+			content: 'min';
+			display: block;
+			position: relative;
+			float: left;
+		}
+		#scale:after{
+			content: 'max';
+			
+			position: absolute;
+			right: -30px;
+		}
+	</style>
+	<title>Table Lens</title>
+</head>
+<body>
+	
+	<form>
+		<input type="file" id="datainput">
+	</form>
+	<div id="container">
+		<div id="rolagem">
+			<span id="top"></span>
+			<span id="barra">--</span>
+			<span id="down"></span>
+		</div>
+	</div>
+	<input type="range" id="range">
+	<div id='scale'></div>
+	<div id="murral">
+		<canvas id="murralcanvas">
+		</canvas>
+	</div>
+</body>
+<!--<script src="//d3js.org/ d3.v3.min.js" charset="utf-8"></script>-->
+<script src="TableLens.js"></script>
+<script>
+window.onload = function(){
+	var conf ={
+		width: 800,
+		height: 600,
+		minheight: 1,
+		maxheight: 10,
+		minwidthcol: 20,
+		data: 'recursos.data',
+		container: "container",
+		datainput: "datainput"
+	}
+  	var Tl = new TableLens(conf);
+ 	document.getElementById("datainput").addEventListener('change',function(evt){
+ 		var fileInput = evt.target.files;
+ 		Tl.readData(this.files[0]);
+ 	});
+
+ 	document.getElementById("top").addEventListener('click',function(){
+ 		if(Tl.start())Tl.rolagem(-1)
+ 	});
+ 	document.getElementById("down").addEventListener('click',function(){
+ 		if(Tl.start()) Tl.rolagem(1)
+ 	});
+ 	document.getElementById("range").addEventListener("input",function(){
+ 		var value = parseInt(this.value);
+ 		if(Tl.start()) Tl.setRowminHeight(value);
+ 	});
+ 	document.getElementById("")
+}
+
+</script>
+</html>
