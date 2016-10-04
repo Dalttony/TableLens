@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="normalize.css">
+	<style>
+		body{
+			font: 16px sans-serif;
+		}
+		#container, #container2{
+			margin-left: 10px;
+			margin-top: 10px;
+		}
+		#cols{
+			margin: 0;
+			padding: 0;
+		}
+		#cols > li{
+			text-decoration: none;
+			display: inline-block;
+			text-align: center;
+			white-space:nowrap; 
+			overflow:hidden;
+			text-overflow: ellipsis;
+			background-color: #EEEEEE;
+			font: 12px arial;
+			
+		}
+		#rolagem{
+			width: 25px;
+			height: 600px;
+			border:1px solid #737373;
+			position: relative;
+			float: right;
+			visibility: hidden;
+		}
+		#rolagem  span{
+			display: block;
+			width: 25px;
+			height: 30px;
+			position: absolute;
+			border: 1px solid #737373;
+			
+		}
+		#rolagem span:first-child{
+			top: 0;
+		}
+		#rolagem span:last-child{
+			bottom: 0;
+		}
+		#barra{
+			display: block;
+			width: auto;
+			height: 10px;
+			background-color: #EEEEEE;;
+			border:1px solid #737373;
+			position: relative;
+			padding: auto;
+			text-align: center;
+		}
+		#range{
+			margin: 4px;
+			//*visibility: hidden;*/
+		}
+
+		#scale {
+			width: 850px;
+			height: 20px;
+			position: relative;
+			margin-top: 5px;
+			margin-left: 30px;
+			display: block;
+
+		}
+		#scale > div{
+			width: 8px;
+			height: 10px;
+			display: inline-block;
+		}
+		#scale:before{
+			content: 'min';
+			display: block;
+			position: relative;
+			float: left;
+		}
+		#scale:after{
+			content: 'max';
+			
+			position: absolute;
+			right: -30px;
+		}
+		table{
+    		border-collapse: collapse;
+    		border-spacing: 0;
+    		border:0;
+    		width: auto;
+		}
+		table td{
+			padding: 0;
+			border:0;
+			margin: 0;
+		}
+
+		table tr{
+			padding: 0;
+			border:0;
+			margin: 0;
+		}
+		#TableLens, tr, td, th{
+				position: relative;
+		}
+		#table{
+			position: relative;
+			overflow: auto;
+		}
+		table span{
+			position: absolute;
+			left: 0;
+			top: 0;
+			background: red;
+			padding: 0;
+			margin: 0;
+			border: 0;
+		}
+		
+		table td{
+			margin-left: 10px;
+		}
+		fieldset > fieldset{
+			float: left;
+		}
+		fieldset span{
+			width: 40px;
+			height: 40px;
+			display: inline-block;
+		}
+
+	</style>
+	<title>Table Lens</title>
+</head>
+<body>
+	
+	<form>
+		<input type="file" id="datainput">
+	</form>
+	<div id="con">
+		<div id="container">
+			<div id="rolagem">
+				<span id="top"></span>
+				<span id="barra">--</span>
+				<span id="down"></span>
+			</div>	
+		</div>
+		<div id="container2">
+		</div>
+	</div>
+
+		<input type="number" id="range" min="-10" value="-1" max="10" />
+		<div id='scale'></div>
+	
+	<fieldset>
+		<legend>Colors standard deviation, for mean,  max value</legend>
+			  <fieldset>
+			  	<legend><input type="radio" name="x" onclick="colorchange(1)" checked="true" /> </legend>
+				  	<span style="background-color:#FF9933;"></span>
+				  	<span style="background-color:#003399;"></span>
+				  	<span style="background-color:#99CCCC;"></span>
+			  </fieldset>
+			    <fieldset>
+			  	<legend><input type="radio"  name="x"  id="color" onclick="colorchange(2)"/> </legend>
+				  	<span style="background-color:#a6cee3;"></span>
+				  	<span style="background-color:#1f78b4;"></span>
+				  	<span style="background-color:#b2df8a;"></span>
+			  </fieldset>
+			  <fieldset>
+			  	<legend><input type="radio" name="x"  id="color" onclick="colorchange(3)"/> </legend>
+			  	<span style="background-color:#003399;"></span>
+			  	<span style="background-color:#99CCCC;"></span>
+			  	<span style="background-color:#FF9933;"></span>
+			  </fieldset>
+			  <fieldset>
+			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(4)" /> </legend>
+			  	<span style="background-color:#FF9933;"></span>
+			  	<span style="background-color:#99CCCC;"></span>
+			  	<span style="background-color:#1f78b4;"></span>
+			  </fieldset>
+
+			   <fieldset>
+			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(5)" /> </legend>
+			  	<span style="background-color:#a6cee3;"></span>
+			  	<span style="background-color:#1f78b4;"></span>
+			  	<span style="background-color:#b2df8a;"></span>
+			  </fieldset>
+			   <fieldset>
+			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(6)" /> </legend>
+			  	<span style="background-color:#edf8b1;"></span>
+			  	<span style="background-color:#7fcdbb;"></span>
+			  	<span style="background-color:#2c7fb8;"></span>
+			  </fieldset>
+			</fieldset>
+	
+	
+	
+
+	<div id="table">
+		<table id="TableLens">
+			
+		</table>
+	</div>
+</body>
+<!--<script src="//d3js.org/ d3.v3.min.js" charset="utf-8"></script>-->
+<script src="TableLens.js"></script>
+<script>
+var conf ={
+		width: 800,
+		height: 600,
+		minheight: 1,
+		maxheight: 10,
+		minwidthcol: 20,
+		data: 'recursos.data',
+		container: "container",
+		datainput: "datainput"
+	}
+var Tl = new TableLens(conf);
+window.onload = function(){
+	
+  	var downtime  = false, idinterval = 0;
+ 	document.getElementById("datainput").addEventListener('change',function(evt){
+ 		var fileInput = evt.target.files;
+ 		Tl.readData(this.files[0]);
+ 	});
+
+ 	document.getElementById("top").addEventListener('mousedown',function(){
+ 		downtime = true;
+ 		if(Tl.start()) 
+ 			idinterval = setInterval(function(){
+ 				if(downtime){
+ 					Tl.rolagem(-1)
+ 				}
+ 			},200)
+ 	});
+ 	document.getElementById("top").addEventListener("mouseup",function(evt){
+ 		downtime = false;
+ 		clearInterval(idinterval);
+ 	});
+
+ 	document.getElementById("down").addEventListener('mousedown',function(){
+ 		downtime = true;
+ 		if(Tl.start()) 
+ 			idinterval = setInterval(function(){
+ 				if(downtime){
+ 					Tl.rolagem(1)
+ 				}
+ 			},200)
+ 	});
+ 	document.getElementById("down").addEventListener("mouseup",function(evt){
+ 		downtime = true;
+ 		clearInterval(idinterval);
+ 	});
+ 	document.getElementById("range").addEventListener("input",function(){
+ 		var value = parseInt(this.value);
+ 		if(Tl.start()) Tl.setRowminHeight(value);
+ 	});
+ 	document.getElementById("")
+}
+function colorchange(evt){
+	Tl.color(evt);
+}
+</script>
+</html>
