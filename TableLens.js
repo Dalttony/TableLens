@@ -23,8 +23,8 @@
 * this is constructing the TableLesn algorithm (TL)
 * @constructor
 * @param {object} args configurations
-* @param {integer} args.minheight=1 - Minimum height of the rows of TableLens
-* @param {integer} args.maxheight=10 - Maximum height of the rows of TableLens when this isn´t  compressed
+* @param {integer} args.min_row_height=1 - Minimum height of the rows of TableLens
+* @param {integer} args.max_row_height=10 - Maximum height of the rows of TableLens when this isn´t  compressed
 * @param {integer} args.minwidthcol=0 - Minimum widht of the column 
 * @param {String} [data] args.data = "data.data" - the format file is   "data"  for to read the data
 * @param {String} [container] args.container =  id of element div html in the page
@@ -43,7 +43,9 @@ var TableLens = (function(args) {
 	 */
 	var self = this;
 	var ctx; //context 
+	var ctx2;
 	var cvs; //canvas 
+	var canvas2 = document.createElement("canvas");
 	var DataRow = [];
 	var DataColumn = [];
 	var viewModel;
@@ -51,6 +53,7 @@ var TableLens = (function(args) {
 	var mrow=0, mxrow=0;
 	var verificamovida=false;
 	var ready = false;
+	var linefieyes = -1;
 	/**
 	 * [doc   document object of the broswer]
 	 * @type {[Object broswer]}
@@ -70,8 +73,8 @@ var TableLens = (function(args) {
 	var conf = {
 		width: 800,
 		height: 600,
-		minheight: 1,
-		maxheight: 16,
+		min_row_height: 1,
+		max_row_height: 15,
 		minwidthcol: 20,
 		stHeight:12,
 		datapadding:10,
@@ -102,6 +105,7 @@ var TableLens = (function(args) {
 		DistanceString:"DISTANCESTRING",
 		Categorical:"CATEGORICAL"
 	};
+
 	var columns = {
 
 	};
@@ -114,7 +118,7 @@ var TableLens = (function(args) {
 		var file = new FileReader();
 		
 		var	updateProgress = function(evt){
-				console.log(evt);
+			
 		};
 		var errorProgress =function(evt){
 			console.log("errorProgress");
@@ -198,6 +202,10 @@ var TableLens = (function(args) {
 		if(length<conf.height) length = TbLens.getRowLength();
 		barraRoll.setup(length,mxrow);
 	}
+	this.color =function(idcolor){
+		TbLens.colorValues(idcolor);
+		TbLens.setRowminHeight(TbLens.getRowHeight());
+	}
 	/**
 	 * [TableLens main class for represent]
 	 * @param {[type]} model [description]
@@ -221,55 +229,37 @@ var TableLens = (function(args) {
 		//DrawMurral();
 
 
-		function DrawMurral(){
-			var cmurral = TableLensUtil.ById("murralcanvas");
-			cmurral.width = conf.width;
-			cmurral.height = conf.height;
-			cmurral.style.border="1px solid red";
-			var ctx2 = cmurral.getContext("2d");
-			var dtcolumn = viewModel.getDataColumn(0);
-			var h=192;
-			var w=80;
-			var h1= 393;
-			var w1=80;
-			for (var x = 0; i < 80; i++) {
-				for (var y = 0; i < 392; i++) {
-						var nx = x/w1*w; 
-						var ny = y/h1*h;
-						console.log(nx+" "+ny);
-						console.log(Math.floor(nx)+" "+Math.floor(ny));
-				}
-			}
-		}
-
 		//set up rows table
 		this.setLensSize = function(s){
 
 		};
 		this.fishEyes = function(irow){
-			console.log(irow);
-			if(rows.length >= irow){
+			//if(rows.length >= irow){
 				var i = 0;
 				var len =  rows.length;
-				var id=0;
-				for (; i <len; i++) {
-						id +=rows[i].getHeight();
-						if(i <= irow && (i + rows[i].getHeight() > irow)){
+				var id = -1;
+				for (; i <= irow; i++) {
+						id += rows[i] ? rows[i].getHeight() : 0;
+						if( irow <= id && ( id >= irow)){
 							if(rows[i].getFeyes()){
-								rows[i].setHeight(1);
+								rows[i].setHeight(conf.min_row_height);
 								rows[i].fEyes(false);
 							}
 							else{
-									rows[i].setHeight(15);
+									id -= rows[i].getHeight();
+									linefieyes = i;
+									rows[i].setHeight(conf.max_row_height);
 									rows[i].fEyes(true);
 							}
 							break;
 						}else{
 
 						}
+						
 				}
-					viewModel.render(rowHeight);
-			}
+				
+				viewModel.render(rowHeight);
+			//}
 		}
 		this.setRowminHeight = function(h){
 			rowHeight = h;
@@ -287,13 +277,35 @@ var TableLens = (function(args) {
 		this.sort = function(id){
 			viewModel.sort(id);
 		}
+		this.colorValues = function(color){
+			viewModel.colorDrawed(color);
+		}
 		this.getRowLength = function(){
 			return rows.length;
 		}
 	};	
+
+
 	var TableLensView = function(model,rows){
+		var self = this;
 		var model = model;
 		this.rows = rows;
+		this.table = document.getElementById("TableLens");;
+		self.body = document.createElement("tbody");
+		this.rowCompressed = 1;
+		var canvas = TableLensUtil.createElement("canvas");
+		
+		var _color = {
+			_1:["#FF9933","#003399","#99CCCC"],
+			_2:["#a6cee3","#1f78b4","#b2df8a"],
+			_3:["#003399","#99CCCC","#FF9933"],
+			_4:["#FF9933","#99CCCC","#003399"],
+			_5:["#a6cee3","#1f78b4","#b2df8a"],
+			_6:["#edf8b1","#7fcdbb","#2c7fb8"],
+		}
+		this.color = _color["_1"];
+
+		
 		//set up width and hight of column table
 		var i=0;
 		var DataColumns = model.getColumns();
@@ -309,7 +321,63 @@ var TableLens = (function(args) {
 				DataColumns[i].offset = res;
 				res +=  DataColumns[i].getwidth() +(DataColumns[i].padding*2)+1;
 		}
+		var handler = {
+			click:function(evt) {
+
+			},
+			dbclick:function(evt) {
+
+			},
+			mousemove:function(evt) {
+
+			},
+			mousedown:function(evt) {
+				
+			},
+			mouseup:function(evt) {
+
+			},
+			mouseleave:function(evt) {
+
+			}
+		};
 		initComponents(DataColumns);
+		initComponentsTable();
+
+		function initComponentsTable(){
+			var len = DataColumns.length;
+			var i=0;
+			var item;
+			var tr = document.createElement("tr");
+			var thead = document.createElement("thead");
+			self.table.parentElement.style.width = (conf.width+20)+"px";
+			self.table.parentElement.style.height = (conf.height)+"px";
+
+			self.table.style.width = conf.width+"px";
+			self.table.style.height = conf.height+"px";
+			for(; i < len; i++){
+				item = DataColumns[i]
+				var text = document.createTextNode(item.getTitle());
+				
+				var th = document.createElement("th");
+				th.innerText = item.getTitle();
+				th.style.width = item.getwidth()+"px";
+				th.addEventListener("click", handler.click);
+				th.addEventListener("dbclick", handler.dbclick);
+				th.addEventListener("mousemove", handler.mousemove);
+				th.addEventListener("mouseenter", handler.mouseenter);
+				th.addEventListener("mousedown", handler.mousedown);
+				th.addEventListener("mouseup", handler.mouseup);
+				th.addEventListener("mouseleave", handler.mouseleave);
+				tr.appendChild(th);
+			}
+
+			thead.appendChild(tr)
+
+			self.table.appendChild(thead);
+			
+			self.table.appendChild(self.body);	
+		}
 		this.getDataColumn = function(id){
 			
 			return DataColumns[id];
@@ -323,6 +391,11 @@ var TableLens = (function(args) {
 
 		this.getRows = function(){
 			return rows;
+		}
+
+		this.colorDrawed = function(id){
+			this.color = _color["_"+id];
+			this.render(this.rowCompressed);
 		}
 		/**
 		 * [sort Sorting the datarow]
@@ -349,14 +422,17 @@ var TableLens = (function(args) {
 			}
 			this.render(TbLens.getRowHeight());
 		}
+
 		var scale = document.getElementById('scale');
 		 
 		for(var i=1;i<100;i++){
-				var color =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},i/99);
+				var color =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},i/99);
 				var div = document.createElement('div');
 				div.style.backgroundColor = " rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")";
 				scale.appendChild(div);
 		}
+
+	
 		/**
 		 * [drawCompressedData compressing data by blending the row table]
 		 * @param  {[DataValues]} data [Davalues (row) to blend]
@@ -364,20 +440,34 @@ var TableLens = (function(args) {
 		 * @return {[]}      [Data compressing]
 		 */
 		this.drawCompressedData = function(data,id){
+
+			
+			
+				
+			
 			var i = 0;
 			var len = data.length;
 			var op = 1/len;
 			var vl;
-			var avg=-1;//average variabel
+			var avg=0;//average variabel
 			var  pmax=0,pmin=0,pmid=0;//minimum, maximum and middle data value
 			var dst=0;//standard deviation
 			var max=0,min=Number.MAX_VALUE,mid=0;
 			var vlsum=0;
 			var column = data[0].getColumn();
 			op = (op<0.25)?0.25:op;
-			
+			var fisheyes = 0;
 			for (; i < len; i++) {
-
+					
+			/*	var rw = data[i].getIdr()-1;
+				  if(this.rows[rw].getFeyes()) {
+				  	console.log(i,rw);
+				  	fisheyes = rw;
+				  	break;
+				  }*/
+			}
+			i=0;
+			for (; i < len; i++) {
 				vl=data[i].getValue();
 				vlsum+=vl;
 				//console.log(vl+" "+id );
@@ -402,6 +492,29 @@ var TableLens = (function(args) {
 					}
 				}
 			}
+			if(linefieyes > -1){
+
+				if(id < linefieyes){
+					ctx.filter = "blur(1px)"; 
+				}
+
+				if(id > linefieyes + conf.max_row_height){
+					ctx.filter = "blur(1px)";
+				}
+
+				if(id == linefieyes){
+					ctx.restore()
+					ctx.save();
+				}
+
+			}
+			
+
+			
+
+			
+			
+			//if(id > fisheyes+){ ctx.save(); ctx.filter = "blur(1px)";}
 			//draw the value for
 			if(column instanceof CategoricalColumn || column instanceof StringColumn){
 				var c = Math.floor(Math.random() * data.length) - 1;
@@ -417,12 +530,13 @@ var TableLens = (function(args) {
 				var vlmax = (data[pmax].getValue() * column.getwidth())/column.getMaxValue();
 				var vlmin = (data[pmin].getValue() * column.getwidth())/column.getMaxValue();
 				var vlmid = (mid>0)?(data[pmax].getValue() * column.getwidth())/column.getMaxValue():mid;
-				//console.log(avg);
+				
 				i=len-1;
 				//draw the image 
 				var x2 = column.offset + vlmax,  
 					y2 = id;
 					var grad = ctx.createLinearGradient(column.offset,id,x2,y2);
+				
 				
 				//var grad= ctx.createLinearGradient(0,0,x2,y2);
 				//getting the variance -
@@ -446,23 +560,25 @@ var TableLens = (function(args) {
 					sum+=data[j].getValue();
 				}
 				if(data.length==1){
-					var color1 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},99/99);
+					var color1 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},99/99);
 					grad.addColorStop(0," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
 				}
 				if (data.length ==2){
 					var v1 = data[0].getValue();
 					var v2 = data[1].getValue();
 					if(v1-v2 !=0){
-						var color1 = HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},99/99);
-						var color2 = HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},1/99);
+						var color1 = HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},99/99);
+						var color2 = HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},1/99);
 
 						var m = (v2 * 1) / v1;
+						m = (m > 0.9999) ? 1:m+0.0001;
 						grad.addColorStop(0," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
 						grad.addColorStop(m," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
-						grad.addColorStop(m+0.0001," rgb("+Math.round(color2.red)+","+Math.round(color2.green)+","+Math.round(color2.blue)+")");
+						
+						grad.addColorStop(m," rgb("+Math.round(color2.red)+","+Math.round(color2.green)+","+Math.round(color2.blue)+")");
 					}else{
 						
-						var color1 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},99/99);
+						var color1 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},99/99);
 						grad.addColorStop(0," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
 					}
 				}
@@ -470,10 +586,11 @@ var TableLens = (function(args) {
 					var v1 = data[0].getValue();
 					var v2 = data[1].getValue();
 					var v3 = data[2].getValue();
-					var color1 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},99/99);
-					var color2 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},45/99);
-					var color3 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},1/99);
+					var color1 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},99/99);
+					var color2 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},45/99);
+					var color3 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},1/99);
 					var m = (v3 * 1) / v1;
+					m = (m > 0.9999) ? 1:m+0.0001;
 					grad.addColorStop(0," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
 					grad.addColorStop(m," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
 						if( v1-v3 != 0){
@@ -499,17 +616,16 @@ var TableLens = (function(args) {
 				}
 
 				if (data.length ==4){
-					console.log('aja');
 					var v1 = data[0].getValue();
 					var v2 = data[1].getValue();
 					var v3 = data[2].getValue();
 					var v4 = data[3].getValue();
-					var color1 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},99/99);
-					var color2 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},45/99);
-					var color3 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},20/99);
-					var color4 =	 HSIModel({hue: 4, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},1/99);
+					var color1 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},99/99);
+					var color2 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},45/99);
+					var color3 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},20/99);
+					var color4 =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},1/99);
 					var m = (v4 * 1) / v1;
-					
+					m = (m > 0.9999) ? 1:m+0.0001;
 					grad.addColorStop(0," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
 					grad.addColorStop(m," rgb("+Math.round(color1.red)+","+Math.round(color1.green)+","+Math.round(color1.blue)+")");
 					if(v4-v1  != 1){
@@ -571,18 +687,20 @@ var TableLens = (function(args) {
 				// mapear segundo seja esse porcentagem
 				//  
 
-				/*var acu=0;
-				for (; i >= 0 ; i--) {
-
+				//var grad= ctx.createLinearGradient(0,0,x2,y2);
+				//getting the variance -
+				i=len-1;
+				for (; i >= 0; i--) {
 					vl=data[i].getValue();
-					var color = column.setColor(vl);
-					//var div = 1 / (i+1);
-					var div = vl / sum;
-					acu +=div;
-					grad.addColorStop(acu," rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")");
+					//var color = column.setColor(vl);
+					//color = color.color;
+					var valor = parseInt(i) / 1 ;
+					var div = 1 / (i+1);
+					//grad.addColorStop(div," rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")");
+
 					dst += Math.pow((vl-avg),2)
-				}*/
-			
+
+				}
 				//grad.addColorStop(1, "red");
 				//grad.addColorStop(0, "black");
 				
@@ -590,26 +708,299 @@ var TableLens = (function(args) {
 				//vl = (vl * column.getwidth())/column.getMaxValue();
 				
 				
+				var lavg = (avg * column.getwidth())/column.getMaxValue();
 				var dstpos = (dst * column.getwidth())/column.getMaxValue();
 				
-				//
 				//ctx.globalCompositeOperation ="source-over";
 				var v = vlsum/len;
 				v =(v * column.getwidth())/column.getMaxValue();
 				//column.draw(dstpos,id,1);
 				ctx.fillStyle=grad;
-				//ctx.fillStyle=conf.color;
 				ctx.fillRect(column.offset,id,vlmax,1);
-/*
+				//drawing maximum value into the other canvas
+				var grad2 = ctx2.createLinearGradient(column.offset,id,column.offset+vlmax,id);
+				var dstgrad = dstpos/vlmax;
+				var lavggrad = lavg / vlmax;
+				grad2.addColorStop(dstgrad, this.color[0]);
+				grad2.addColorStop(lavggrad - 0.03, this.color[1]);
+				grad2.addColorStop(lavggrad, this.color[1]);
+				grad2.addColorStop(1, this.color[2]);
+				ctx2.fillStyle = grad2;
+				ctx2.strokeStyle = grad2;
+				
+				//ctx2.fillStyle = this.color[2];
+				ctx2.fillRect(column.offset,id,vlmax,1);
+/**/			//drawing average value
+				//ctx2.fillStyle = this.color[1];
+				//ctx2.fillRect(column.offset,id,lavg,1);
+				
+
 				conf.color="red"
-				ctx.fillStyle=conf.color;
-				ctx.fillRect(column.offset+dstpos+3,id,1,1);
-				*/
+				ctx.fillStyle=this.color[0];
+				ctx.strokeStyle=this.color[0]; //"rgb(243,111,39)";
+				//ctx2.fillStyle=this.color[0];
+				//ctx2.strokeStyle=this.color[0]; //"rgb(243,111,39)";
+				//ctx.lineCap="round";
+				//if(column.getIndex()==2){
+				ctx.lineWidth = 1;
+				ctx2.lineWidth = 1;
+					if(id == 0){
+						ctx.beginPath();
+						ctx.moveTo(column.offset,id);
+						ctx.lineTo(column.offset+dstpos+3,id)
+
+						//ctx2.beginPath();
+						//ctx2.moveTo(column.offset,id);
+						//ctx2.lineTo(column.offset+dstpos+3,id)
+					} 
+					if(id > 0){
+						
+						ctx.moveTo(column.offset,id);
+						ctx.lineTo(column.offset+dstpos+3,id);
+
+						ctx2.moveTo(column.offset,id);
+						//ctx2.lineTo(column.offset+dstpos+3,id);
+						
+						//console.log(column.offset+dstpos+5,id);
+					}
+					
+					if(id == parseInt((model.getRowCount()-1)/this.rowCompressed )){
+
+						ctx.lineTo(column.offset,id);
+						//ctx2.lineTo(column.offset,id);
+						//ctx.closePath();
+					}
+					ctx.stroke();
+					//ctx2.stroke();
+					//ctx.fillRect(column.offset+dstpos+4,id,1,1);
+				//}
+				
+				//ctx.fillRect(column.offset+dstpos+5,id,1,1);
+
 				
 			}
 		};
 
-		function HSIModel(to,from,iter){
+		function initComponents(cols){
+		
+			var div = TableLensUtil.ById(conf.container);
+			var div2 = document.getElementById("container2");
+			var w = conf.width + 1, h=conf.height + 1; //width of canvas
+			
+			var divcl = TableLensUtil.createElement("div");
+			var ul = TableLensUtil.createElement("ul");
+			var rol= TableLensUtil.ById("rolagem");
+			var range = TableLensUtil.ById("range");
+			/***Render Table */
+			
+			
+
+			
+			/**/
+			range.max = conf.max_row_height;
+			range.min =-conf.max_row_height;
+			// range.value=1;
+			range.step=1;
+			// range.defaultValue = conf.max_row_height/2;
+			//console.log(Object.create(range));
+			rol.style.visibility ="visible";
+			divcl.style.width= w+"px";
+			divcl.style.height ="auto";
+			ul.setAttribute("id","cols");
+			divcl.appendChild(ul);
+			//create div columns
+			var i=0;
+			for (; i < cols.length; i++) {
+				/**text*/
+				var text = document.createTextNode(cols[i].getTitle());
+				
+				var li = TableLensUtil.createElement("li")
+				li.style.padding = cols[i].padding+"px";
+				li.style.width = cols[i].getwidth()+"px";
+				li.setAttribute("id","col"+i);
+				li.className ="column";
+				li.value= i;
+				li.type = i;
+				li.addEventListener("click", click);
+				li.addEventListener("dbclick", dbclick);
+				li.addEventListener("mousemove", mousemove);
+				li.addEventListener("mouseenter", mouseenter);
+				li.addEventListener("mousedown", mousedown);
+				li.addEventListener("mouseleave", mouseleave);
+				li.style.height = cols[i].getHeight()+"px";
+				li.style.borderLeft =  "1px solid #737373";
+				li.style.maxWidth = (cols[i].getwidth()*1.5)+"px";
+				li.style.minWidth = (cols[i].getwidth()/1.5)+"px";
+				li.appendChild(text);
+				ul.appendChild(li);
+				/*Row*/
+				
+			}
+			
+			div.style.width =  rol.clientWidth+4+(w+1)+"px";
+			div.style.height = "auto";
+			div.style.border = "1px solid #737373";
+			div.style.boxSizing = "border-box";
+
+			
+			canvas.width =conf.width;
+			canvas.height = conf.height;
+			canvas.style.display = "block";
+			canvas.style.border = "1px dotted black";
+			canvas.style.position = "relative";
+			canvas.addEventListener('mousedown',canvasclick)
+
+			canvas2.width =conf.width;
+			canvas2.height = conf.height;
+			canvas2.style.display = "block";
+			canvas2.style.border = "1px dotted black";
+			canvas2.style.position = "relative";
+			canvas2.addEventListener('mousedown',canvasclick)
+			//set the context 2D 
+			cvs = canvas;
+			
+			cvs.onmousemove=function(evt){
+				//console.log(evt.layerY);
+			}
+			ctx = canvas.getContext("2d");
+			ctx2 = canvas2.getContext("2d");
+			try
+			{
+				ctx.imageSmoothingEnabled = false;
+	    	 ctx.mozImageSmoothingEnabled = false;
+	   		  ctx.webkitImageSmoothingEnabled = false;
+	    		ctx.msImageSmoothingEnabled = false;
+			}catch(err){
+				
+				Log.addLog(err,"e");
+			}
+			 
+			//add element to main component [menu and canvas]
+			div.appendChild(divcl);
+			div.appendChild(canvas);
+			div2.appendChild(canvas2);
+			rol.style.height = div.clientHeight+"px";
+	}
+
+		this.resizeColumn = function(){
+
+		}
+
+		/**
+		 *Listeners
+		 * 
+		 */
+		var target;
+		var cwidth=false;//when it activated to change width the column
+		var wtarget=0;
+		var adc=0; // integer value indicate if column increases or decrease width
+		var vadc; //boolena value indicate if column increases or decrease width
+		var target2=null;
+		var w2=0;
+		var pr = false;
+		var t=0;
+		var resize = false;
+		var offsetX =0;
+		function click(evt){
+			if(!resize){
+				cwidth=false;
+				adc=0;
+				vadc=0;
+				TbLens.sort(parseInt(this.value));
+			}
+
+		}
+		function dbclick(evt){
+			console.log("bs");
+		}
+
+		function mousemove(evt){
+
+			if(!cwidth){
+				//set up riseze of column
+				if(evt.target.nextSibling != null){
+					
+					if(evt.offsetX > (evt.target.clientWidth-10)){
+							this.style.cursor ="e-resize";
+					 	adc = evt.x;
+					 	pr=true;
+					 }
+					 else{
+					 	pr=false;
+					 	this.style.cursor ="auto";
+					 }
+				}
+			}
+			else
+			{
+				resize = true;
+				var nx = evt.clientX - offsetX;
+				target.style.width = (wtarget+nx)+"px";	
+				DataColumns[target.value].setWidth((wtarget+nx)- 1);
+				
+				i=target.value+1;
+				len = DataColumns.length;
+				res = DataColumns[target.value].offset;
+				
+				for (; i <len; i++) {
+					DataColumns[i].setWidth(DataColumns[i].getwidth() + nx - 1);
+					console.log(document.getElementById("col"+i).offsetLeft);
+					//DataColumns[i].offset = document.getElementById("col"+i).offsetLeft;
+				}
+				target.nextSibling.style.width = DataColumns[target.value+1].getwidth()+"px";
+				self.render(1);
+
+				//DataColumns[target.value].setWidth((wtarget+nx));
+				//
+				//DataColumns[target.value+1].offset =  DataColumns[target.value].getwidth() + (DataColumns[target.value].padding*2)+1;
+				//self.render(1);
+				/*if(adc < evt.x){
+					vadc=adc;
+					adc= evt.x;
+					wtarget+=5
+					var last=target.parentNode.lastElementChild;
+					if(t==0)t = last.clientWidth;
+					t-=10;
+					last.style.width = "10px";
+					target.style.width = wtarget+"px";	
+				}else{
+
+					if(adc > evt.x){
+						vadc=adc;
+						adc= evt.x;
+						wtarget-=5;
+						target.style.width = wtarget+"px";
+					}
+				}*/
+			}
+		}
+		function mouseenter(evt){
+			
+///			console.log(evt.target);
+		}
+
+		function mouseup(){
+			resize = false;
+		}
+		function mousedown(evt){
+			if(pr){
+				cwidth=true;
+				target = evt.target;
+				wtarget = target.clientWidth;
+				target2 = target.nextSibling;
+				w2 = target2.clientWidth;
+				offsetX = evt.clientX;
+			}
+				
+		}
+
+		function mouseleave(){
+			console.log("sale");
+		}
+
+	}
+	
+	function HSIModel(to,from,iter){
 
 			function convierteHexadecimal(num){
 					//alert (num)
@@ -728,9 +1119,6 @@ var TableLens = (function(args) {
 			
 		}
 
-	}
-	
-	
 /**
 	 * [view for to render de view into of canvas]
 	 * @type {Object}
@@ -745,11 +1133,14 @@ var TableLens = (function(args) {
 			var id=1;
 			var id2=0;
 			var v=mrow;
+
 			for (; v < row+mrow && v <vlen ; v++) {
 				var data = rwdata[v].getData();
 				var hi = rwdata[v].getHeight();
 				var fyes = rwdata[v].getFeyes()
+
 				for (; i <len; i++) {
+					rwdata[v].ele.appendChild(data[i].ele);
 							data[i].feyes(fyes);
 							data[i].setId(id);
 							data[i].draw(h,id,hi);
@@ -757,10 +1148,13 @@ var TableLens = (function(args) {
 				id+=hi;
 				i=0;
 				id2++;
+				this.body.appendChild(rwdata[v].ele);
 			}
 			mxrow=id2;
+
 		},
 		drawCompressed:function(h){
+			
 			var rwdata = this.rows;
 			h = Math.abs(h);
 			var len = this.getCountDataColumn();
@@ -775,11 +1169,13 @@ var TableLens = (function(args) {
 			var inslacke = Math.round(vlen / h);
 			var lack = (inslacke * h) - vlen;
 			var add = lack;
+			ctx.save();
 			for (; i <len; i++) {
-
+				
 				for (; v < vlen; v+=h) {
 					hi = rwdata[v].getHeight();
 					var newrw = rwdata.slice(v,v+h);
+					
 					for(var d=0;d<newrw.length;d++){
 						var dd= newrw[d].getData();
 						datacompressed.push(dd[i])
@@ -812,8 +1208,10 @@ var TableLens = (function(args) {
 		render:function(h){
 			mxrow=0;
 				cvs.width = cvs.width;
+				canvas2.width = canvas2.width
 			i=0
-			h=h==0?1:h;
+			h=h==0||h==-1?1:h;
+			this.rowCompressed = Math.abs(h);
 			var len = this.getCountDataColumn();
 			//draw the grid
 			for (; i <len; i++) {
@@ -821,8 +1219,8 @@ var TableLens = (function(args) {
 				ctx.lineTo(this.getDataColumn(i).offset,conf.height);
 				ctx.stroke();
 			}
-			if(h<conf.minheight-1) this.drawCompressed(h)
-			if(h>conf.minheight-1) this.draw(h);
+			if(h<conf.min_row_height-1) this.drawCompressed(h)
+			if(h>conf.min_row_height-1) this.draw(h);
 			
 		}
 	}
@@ -1094,16 +1492,7 @@ var TableLens = (function(args) {
 		getMin:function(){
 			return val();
 		},
-		draw:function(value){
-
-		/*	ctx.font = acth+"px";
-			fil = fil+acth;
-			ctx.fillRect(this.offset,fil,5,1);
-			ctx.fillText(this.getValue(v).getString(),col.offset,fil-5,col.getwidth());
-			ctx.stroke();*/
-			
-
-		},
+		draw:function(value){},
 		setColor:function(value){
 			/*var corini = [255,255,217];
 			var coffin = [8,29,88];
@@ -1119,106 +1508,14 @@ var TableLens = (function(args) {
 			for (i=0;i<3;i++) 
 				diferencia[i] = (coffin[i] - corini[i]) / passos;*/
 			var passos = this.getMaxValue();
-			
-			function convierteHexadecimal(num){
-					var hexaDec = Math.floor(num/16)
-					var hexaUni = num - (hexaDec * 16)
-					return hexadecimal[hexaDec] + hexadecimal[hexaUni]
-				}
-			function HSIScale(to,from,percent){
-					var hue_range = to.hue - from.hue;
-					var sat_range = to.sat -  from.sat;
-					var inte_range = to.inte - from.inte;
-
-					if(hue_range < 0) hue_range	+=6;
-
-				color = HSI(
-					hue_range * percent	+ from.hue,
-					sat_range * percent	+ from.sat,
-					inte_range * percent + from.inte
-					);
-
-				return color;
-			}
-
-			function RbgToHsi(r,g,b){
-				 r = r /(r + g + b );
-				 g = g /(r + g + b );
-				 b = b /(r + g + b );
-				var mid = (r+g+b)/3;
-				var mr = r - mid,
-					mg = g - mid,
-					mb = b - mid;
-			//	var intensity = mid + Math.sqrt((2 * ( mr*mr + mg*mg + mb*mb)/3))
-				var intensity = mid;
-				var saturation = 1 - (3/(r+g+b)) * Math.min(r,g,b);
-				//var saturation = 1 - 2 * (intensity	- mid) / intensity;
-
-				//var cos_hue = (2 * mr - mg - mb)/ Math.sqrt((mr*mr + mg*mg + mb*mb) * 6)
-				//hue = Math.acos(cos_hue) * 3 / Math.PI;
-				var cos_hue = Math.acos( ( ( (r - g ) + ( r - b) ) / 2) / ( Math.sqrt( (r*r) + (g*g) + (b*b) - (r*g) -(r*b) - (g*b) ) ) );
-				//if(b > g ) hue = 6 - hue;
-				if(b > g ){
-					hue = 2* Math.PI - cos_hue;
-				}
-				if(b<=g){
-					hue = cos_hue;
-				}
-
-				hue = Math.floor(hue * 10) / 10;
-				saturation = Math.floor(saturation * 10) / 10;
-				intensity = Math.floor(intensity * 10) / 10;
-				return{hue,saturation,intensity}
-			}
-			function HSI(h,s,i){
-					
-					var r,g,b;
-					/*r=value(h);
-					g=value(h+0.4);
-					b = value(h+0.2);*/
-					if(0 <= h && h < ( (2/3) * Math.PI ) ) {
-
-						b = (1/3) * (1 - s);
-						//b = (1 - s)/3;.
-						//b = i - i*s;
-						r = (1/3) * ( 1 + ( (s * Math.cos(h)) / (Math.cos( ((1/3)*Math.PI) - h ) ) ) );
-						//r = ( 1 + ( (s * Math.cos(h)) / (Math.cos( ((1/3)*Math.PI) - h ) ) ) );
-						g = 1 - ( r + b);
-						
-					}
-					if( ( (2/3) * Math.PI <= h ) && (h <  (4/3) * Math.PI) ) {
-					
-						h = h - (2/3) * Math.PI;
-						r = (1/3)*(1-s);
-						g = (1/3) * ( 1 + ( (s * Math.cos(h)) / (Math.cos( ((1/3)*Math.PI) - h ) ) ) );
-						b = 1 - ( r + g);
-
-					}
-					if( (4/3 * Math.PI  <=  h) && (h < 2 *  Math.PI)){
-						h = h - ( (4/3) * Math.PI );
-						g = (1/3)*(1-s);
-						b = (1/3) * ( 1 + ( (s * Math.cos(h)) / (Math.cos( ((1/3)*Math.PI) - h ) ) ) );
-						r =1 - ( g + b);
-					}
-					/*function value(hue_phase){
-						var pure = 0.5 * (1 + Math.cos(hue_phase * Math.PI / 3));
-						var re = i * (1 - s * (1 - pure));
-						return re;
-					}*/
-				//console.log(r*3*i,g*3*i,b*3*i);
-				return	{red : Math.abs(r)*255 ,
-					     blue : Math.abs(b) * 255,
-					 	 green : Math.abs(g) * 255};
-			}
-			
 			var f = Math.round(value * 100) / passos;
 			f = Math.round(f);
 			//if(f==100) console.log('percent '+f+' div '+ f/99 +" passos "+passos +' valor original '+value)
 			//console.log(f/this.getMinValue());
 			//for(i=1;i<100;i++){
-				var color =	 HSIScale({hue: 4.5, sat: 1, inte:0.4},{hue: 2, sat: 1, inte:1},f/99);	
+				var color =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 0.8, sat: 1, inte:255},f/99);	
 			//}
-
+			
 			/*for (i=0;i<3;i++)
 				color_actual[i] = (iteracion * diferencia[i]) + corini[i];*/
 
@@ -1257,11 +1554,12 @@ var TableLens = (function(args) {
 			return minVal;
 		};
 		this.draw = function(value,id,h,fisheyes){
-			var p = Math.floor((h*conf.datapadding)/conf.maxheight);
+			var p = Math.floor((h*conf.datapadding)/conf.max_row_height);
 			//console.log(value)
 			var color = this.setColor(value);
 			value = value*this.getwidth()/(maxVal);//formula of table lens
-			ctx.fillStyle=" rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")";
+			// ctx.fillStyle=" rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")";
+			ctx.fillStyle=" rgb(0,0,255)";
 			
 			if(fisheyes){
 					var fil = id-1;
@@ -1281,7 +1579,7 @@ var TableLens = (function(args) {
 				ctx.fillRect(this.offset,fil,value,h);
 				ctx.stroke();
 			}
-			
+			return value;
 		}
 		Column.call(this, name,type);
 	}
@@ -1309,10 +1607,11 @@ var TableLens = (function(args) {
 		};
 		this.draw = function(value,id,h,fisheyes){
 			
-			var p = Math.floor((h*conf.datapadding)/conf.maxheight);
+			var p = Math.floor((h*conf.datapadding)/conf.max_row_height);
 			var color = this.setColor(value);
 			value = value*this.getwidth()/(maxVal);//formula of table lens
-			ctx.fillStyle="#"+color; 
+			//ctx.fillStyle="#"+color; 
+			ctx.fillStyle=" rgb(0,0,255)";
 			if(fisheyes){
 					var fil = id-1 ;
 					barra = 1
@@ -1333,6 +1632,7 @@ var TableLens = (function(args) {
 			//	fil = h*id;
 				ctx.fillRect(this.offset,fil,value,h);
 			}
+			return value;
 		}
 			Column.call(this, name, type);
 	}
@@ -1360,7 +1660,7 @@ var TableLens = (function(args) {
 			};
 			this.draw = function(value,id,h,fisheyes){
 			//	console.log(value.search("a"));
-				var p = Math.floor((h*conf.datapadding)/conf.maxheight);
+				var p = Math.floor((h*conf.datapadding)/conf.max_row_height);
 				value = value.length*this.getwidth()/(maxVal);//formula of table lens
 				ctx.fillStyle=conf.color; 
 				
@@ -1384,6 +1684,7 @@ var TableLens = (function(args) {
 					
 					ctx.fillRect(this.offset,fil,value,h);
 				}
+				return value;
 			}
 			this.drawCompress = function(data){
 				var c = Math.floor(Math.random() * data.length) - 1;
@@ -1394,6 +1695,7 @@ var TableLens = (function(args) {
 
 			
 	}
+
 	StringColumn.prototype = Object.create(Column.prototype);
 	StringColumn.prototype.constructor = StringColumn;
 	function CategoricalColumn(name,type){
@@ -1440,8 +1742,8 @@ var TableLens = (function(args) {
 					}
 				return	data.toString().trim();
 			};
-		this.draw = function(val,id,h,fisheyes){
-			var p = Math.floor((h*conf.datapadding)/conf.maxheight);
+		this.draw = function(val,id,h,fisheyes,span){
+			var p = Math.floor((h*conf.datapadding)/conf.max_row_height);
 			value = this.getwidth()+this.padding;
 				if(fisheyes){
 					var fil = id-1 ;
@@ -1466,7 +1768,10 @@ var TableLens = (function(args) {
 				var p = (idof>0)?categoryspace*idof:0;
 				fil = h*id;
 				ctx.fillRect(this.offset+p,fil,categoryspace,h);
-			}				
+			
+			}
+			// span.style.width = categoryspace+"px";
+			// span.style.left = p+"%";		
 		};
 		this.getMinValue = function(){
 				return "Categorica Column";
@@ -1487,16 +1792,22 @@ var TableLens = (function(args) {
 	 */
 
 	var Row = function(data,id){
+		var self = this;
 		var hight = 1;
 		var id = id || id++;
 		var data = data || [];
 		var eyes = false;
+		this.ele = document.createElement("tr");
+		this.ele.style.height = "1px";
 		this.getData = function(){
 			return data;
 		}
 		this.setHeight = function(h){
 			hight = h;
 		};
+		this.getIndex = function(){
+			return id;
+		}
 		this.getHeight = function(){
 			return hight;
 		};
@@ -1511,14 +1822,30 @@ var TableLens = (function(args) {
 				data[i].setIndex(index)
 			}
 		}
+		function dataValue(){
+			for (var i = 0, len = data.length;i<len;i++){
+				var td = document.createElement("td");
+				self.ele_td.push(td);
+			}
+		}
 	};
 
 	var DataValue = function(id, column, value){
 
-		var id =id;
-		var column=column;
+		var id = id;
+		var r = id;
+		var column = column;
 		var padding = 10;
 		var feyes = false;
+		var _value = value;
+		this.ele = document.createElement("td");
+		//this.ele.style.lineHeight ="1px";
+		//this.ele.style.width = "1px";
+		//this.ele.innerText = value;
+		//this.ele.className = "onepixel";
+		this.span = document.createElement("span");
+		
+		this.ele.appendChild(this.span)
 		/**
 		 * [value data value of column]
 		 * @type {[Type data Value]}
@@ -1526,17 +1853,20 @@ var TableLens = (function(args) {
 		var value = column._parseData(value);
 
 		this.draw = function(h,row,hi){
-			var p = Math.floor((h*conf.datapadding)/conf.maxheight); 
+			
+			var p = Math.floor((h*conf.datapadding)/conf.max_row_height); 
 			if(hi==15){
 				h=15;
 			}
 			
 			//draw value of each column
-			//ctx.save();
+			
 			
 			//calculate de value of column IntegerColumn,StringColumn,CategoricalColumn,DoubleColumn,SoundString,DISTANCESTRING
-			
-				var val = column.draw(value,id,h,feyes);
+				
+				var val = column.draw(value,id,h,feyes,this.span);
+				this.span.style.height ="1px";
+				this.span.style.width = val+"px";
 			if(h>7){
 				
 				ctx.fillStyle=conf.colorTextLetter;
@@ -1552,7 +1882,7 @@ var TableLens = (function(args) {
 				ctx.globalAlpha=1;
 				ctx.font = h+"px Arial";	
 				ctx.fillText(value,column.offset+conf.datapadding/2,fil,column.getwidth());
-					
+				
 			}
 				//ctx.restore();
 		};
@@ -1562,6 +1892,9 @@ var TableLens = (function(args) {
 		this.feyes =function	(value){
 				feyes = value;
 		};
+		this.getIdr = function(){
+			return r;
+		}
 		this.getFeyes = function	(){
 			return feyes;
 		}
@@ -1670,9 +2003,7 @@ var TableLens = (function(args) {
 		
 			
 		}
-		this.setIndex = function(i){
-			id=i;
-		}
+		
 		this.getIndex = function(){
 			return id;
 		}
@@ -1682,6 +2013,9 @@ var TableLens = (function(args) {
 		this.getString = function(){
 			return value;
 		};
+		this.setIndex = function(nid){
+			id = nid;
+		}
 		this.getValue = function(){
 			return value;
 		}
@@ -1711,91 +2045,11 @@ var TableLens = (function(args) {
 		}
 	};
 
-	var initComponents = function(cols){
-		
-		var div = TableLensUtil.ById(conf.container);
-		var w = conf.width + 1, h=conf.height + 1;
-		var canvas = TableLensUtil.createElement("canvas");
-		var divcl = TableLensUtil.createElement("div");
-		var ul = TableLensUtil.createElement("ul");
-		var rol= TableLensUtil.ById("rolagem");
-		var range = TableLensUtil.ById("range");
-		range.max = conf.maxheight;
-		range.min =-conf.maxheight;
-		range.value=1;
-		range.step=1;
-		range.defaultValue = conf.maxheight/2;
-		//console.log(Object.create(range));
-		rol.style.visibility ="visible";
-		divcl.style.width= w+"px";
-		divcl.style.height ="auto";
-		ul.setAttribute("id","cols");
-		divcl.appendChild(ul);
-		//create div columns
-		var i=0;
-		for (; i < cols.length; i++) {
-			
-			var li = TableLensUtil.createElement("li")
-			li.style.padding = cols[i].padding+"px";
-			li.style.width = cols[i].getwidth()+"px";
-			li.setAttribute("id","col"+i);
-			li.className ="column";
-			li.value=i;
-			li.type = i;
-			li.addEventListener("click",click);
-			li.addEventListener("dbclick",dbclick);
-			li.addEventListener("mousemove",mousemove);
-			li.addEventListener("mouseenter",mouseenter);
-			li.addEventListener("mousedown",mousedown);
-			li.addEventListener("mouseleave",mouseleave);
-			li.style.height = cols[i].getHeight()+"px";
-			li.style.borderLeft =  "1px solid #737373";
-			var text = document.createTextNode(cols[i].getTitle());
-			li.appendChild(text);
-			ul.appendChild(li);
-		}
-
-		
-		div.style.width =  rol.clientWidth+4+(w+1)+"px";
-		div.style.height = "auto";
-		div.style.border = "1px solid #737373";
-		div.style.boxSizing = "border-box";
-
-		
-		canvas.width =conf.width;
-		canvas.height = conf.height;
-		canvas.style.display = "block";
-		canvas.style.border = "1px dotted black";
-		canvas.style.position = "relative";
-		console.log(Object.create(canvas));
-		canvas.addEventListener('mousedown',canvasclick)
-		//set the context 2D 
-		cvs = canvas;
-		cvs.onmousemove=function(evt){
-			//console.log(evt.layerY);
-		}
-		ctx = canvas.getContext("2d");
-		try
-		{
-			ctx.imageSmoothingEnabled = false;
-    	 ctx.mozImageSmoothingEnabled = false;
-   		  ctx.webkitImageSmoothingEnabled = false;
-    		ctx.msImageSmoothingEnabled = false;
-		}catch(err){
-			console.log(err);
-			Log.addLog(err,"e");
-		}
-		 
-		//add element to main component [menu and canvas]
-		div.appendChild(divcl);
-		div.appendChild(canvas);
-		rol.style.height = div.clientHeight+"px";
-		
-
-	}
+	
 
 	function canvasclick(evt){
-		if(TbLens.getRowHeight()==1) TbLens.fishEyes(evt.offsetY)
+		//if(Math.abs(TbLens.getRowHeight())==1) 
+			TbLens.fishEyes(evt.offsetY)
 	}
 
 	/**
@@ -1828,7 +2082,8 @@ var TableLens = (function(args) {
 			this.barra.style.height = this.h+"px";
 		},
 	  down:function(){
-	  	if(this.pos<this.maxbottom){
+
+	  	if(this.pos < this.maxbottom){
 	  		this.countclick+=1;
 	  		//console.log(this.countclick +" "+this.moveto);
 	  		if(this.countclick==this.moveto){
@@ -1888,91 +2143,7 @@ var TableLens = (function(args) {
 	}
 
 
-		/**
-		 *Listeners
-		 * 
-		 */
-		var target;
-		var cwidth=false;//when it activated to change width the column
-		var wtarget=0;
-		var adc=0; // integer value indicate if column increases or decrease width
-		var vadc; //boolena value indicate if column increases or decrease width
-		var target2=null;
-		var w2=0;
-		var pr = false;
-		var t=0;
-		function click(evt){
-			cwidth=false;
-			adc=0;
-			vadc=0;
-			TbLens.sort(parseInt(this.value));
-
-		}
-		function dbclick(evt){
-			console.log("bs");
-		}
-		function mousemove(evt){
-			if(!cwidth){
-				//set up riseze of column
-				if(evt.target.nextSibling!=null){
-					if(evt.layerX >(evt.target.clientWidth-10)){
-							this.style.cursor ="e-resize";
-					 	adc = evt.x;
-					 	pr=true;
-					 }
-					 else{
-					 	pr=false;
-					 	this.style.cursor ="auto";
-					 }
-				}
-			}
-			else
-			{
-				if(adc < evt.x){
-					vadc=adc;
-					adc= evt.x;
-					wtarget+=5
-					var last=target.parentNode.lastElementChild;
-					if(t==0)t = last.clientWidth;
-					t-=10;
-					console.log(t+" "+last.style.width);
-					/*if(target2==null) target2= target.nextSibling;
-					w2 = target2.clientWidth;
-					w2-=2;*/
-					last.style.width = "10px";
-					target.style.width = wtarget+"px";	
-				}else{
-
-					if(adc > evt.x){
-						vadc=adc;
-						adc= evt.x;
-						wtarget-=5;
-						target.style.width = wtarget+"px";
-					}
-				
-
-				}
-			}
-		}
-		function mouseenter(evt){
-			
-///			console.log(evt.target);
-		}
-
-		function mousedown(evt){
-			if(pr){
-				cwidth=true;
-				target = evt.target;
-				wtarget = target.clientWidth;
-				target2 = target.nextSibling;
-				w2 = target2.clientWidth;
-			}
-				
-		}
-
-		function mouseleave(){
-			console.log("sale");
-		}
+		
 });
 
 /**
