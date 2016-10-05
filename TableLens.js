@@ -114,7 +114,10 @@ var TableLens = (function(args) {
 	 */
 
 	this.readData = function(data){
-		
+		var initime = Date.now();
+		console.log((initime / 0.001));
+		var w = new Worker("reader.js");
+		  
 		var file = new FileReader();
 		
 		var	updateProgress = function(evt){
@@ -131,6 +134,8 @@ var TableLens = (function(args) {
 			 * @type {Array String} [columns] get the row [1] of the strings columns into structure of data in indata
 			 * @type {Array String} [type] get the row [0] of the string TypeColumns into structure of data in indata
 			 */
+			
+			
 			var indata = file.result.split("\n");
 			var type = indata[0].split(dl);
 			var strcolumns = indata[1].split(dl);
@@ -142,8 +147,33 @@ var TableLens = (function(args) {
 				cl.setIndex(i);
 				DataColumn.push(cl);
 			};
-
 			var model = new TableModel(DataColumn);
+
+			w.postMessage({data:file.result,col_len:DataColumn.length});
+			var dtv = [];
+			w.onmessage = function(e){
+		  		switch (e.data.obj){
+		  			case 1://case column
+		  				var dv = new DataValue(e.data.id, DataColumn[e.data.column], e.data.data);
+		  				DataColumn[e.data.column].addDataValue(dv);
+		  				dtv.push(dv);
+		  				break;
+		  			case 2: //case Row
+		  					var r = new Row(dtv, e.data.id);
+		  					//var r = new Row(dtv, i-2);
+							DataRow.push(r);
+							dtv = [];
+		  				break;
+		  			case 3: // finished the reader
+		  				var i=0;
+						TbLens = new TableLens(model, DataRow);
+						ready = true;
+		  				break;
+
+		  		}
+		 	};
+		  return;
+			
 			//get te row into data file
 			i=2;//by starting in second file line
 			for (var i = 2, len=indata.length; i <len ; i++) {
@@ -167,6 +197,9 @@ var TableLens = (function(args) {
 			var i=0;
 			TbLens = new TableLens(model, DataRow);
 			ready = true;
+			var endtime = Date.now();
+			initime = (endtime - initime) * 0.001;
+			console.log("Time seg",initime);
 			//return {model,Datar};
 		};
 
@@ -176,9 +209,12 @@ var TableLens = (function(args) {
 			file.error = errorProgress;
 			file.readAsText(data);
 		};
+
 		// Check for the various File API support.
 		if (window.File && window.FileReader && window.FileList && window.Blob) {
-		  init();
+		 
+		  
+		   init();
 		} else {
 			Log.addValue('The File APIs are not fully supported by your browser.',"a");
 		}
@@ -342,7 +378,7 @@ var TableLens = (function(args) {
 			}
 		};
 		initComponents(DataColumns);
-		initComponentsTable();
+		//initComponentsTable();
 
 		function initComponentsTable(){
 			var len = DataColumns.length;
@@ -1140,7 +1176,7 @@ var TableLens = (function(args) {
 				var fyes = rwdata[v].getFeyes()
 
 				for (; i <len; i++) {
-					rwdata[v].ele.appendChild(data[i].ele);
+				//	rwdata[v].ele.appendChild(data[i].ele);
 							data[i].feyes(fyes);
 							data[i].setId(id);
 							data[i].draw(h,id,hi);
@@ -1838,14 +1874,14 @@ var TableLens = (function(args) {
 		var padding = 10;
 		var feyes = false;
 		var _value = value;
-		this.ele = document.createElement("td");
+		//this.ele = document.createElement("td");
 		//this.ele.style.lineHeight ="1px";
 		//this.ele.style.width = "1px";
 		//this.ele.innerText = value;
 		//this.ele.className = "onepixel";
-		this.span = document.createElement("span");
+		//this.span = document.createElement("span");
 		
-		this.ele.appendChild(this.span)
+		//this.ele.appendChild(this.span)
 		/**
 		 * [value data value of column]
 		 * @type {[Type data Value]}
@@ -1865,8 +1901,8 @@ var TableLens = (function(args) {
 			//calculate de value of column IntegerColumn,StringColumn,CategoricalColumn,DoubleColumn,SoundString,DISTANCESTRING
 				
 				var val = column.draw(value,id,h,feyes,this.span);
-				this.span.style.height ="1px";
-				this.span.style.width = val+"px";
+				//this.span.style.height ="1px";
+				//this.span.style.width = val+"px";
 			if(h>7){
 				
 				ctx.fillStyle=conf.colorTextLetter;
@@ -2069,14 +2105,18 @@ var TableLens = (function(args) {
 		 countclick:0,
 		 row:0,
 	 setup:function(maxrow,rdraw){
-	 		if(maxrow!=null) this.row=maxrow;
 	 		
+	 		if(maxrow!=null) this.row=maxrow;
 	 		this.barra=TableLensUtil.ById("barra")
-			this.barra.style.top =this.mimtop+"px";
+	 		this.barra.addEventListener("mousemove",this.mousemove);
+	 		this.barra.addEventListener("mousedown",this.mousedown);
+	 		this.barra.addEventListener("mouseup",this.mouseup);
+	 		this.barra.addEventListener("mouseleave",this.mouseleave);
+	 		this.barra.style.top =this.mimtop+"px";
 			this.pos =this.mimtop;
 			this.maxbottom = this.barra.parentNode.clientHeight - this.barra.nextElementSibling.clientHeight;
 			var heigh = this.barra.parentNode.clientHeight - this.barra.nextElementSibling.clientHeight-this.barra.previousElementSibling.clientHeight;
-			this.moveto = Math.floor((rdraw *100)/heigh);
+			this.moveto = Math.round(maxrow/rdraw);
 			this.h = (rdraw * heigh) / this.row;
 			//console.log(this.maxbottom+" "+rdraw+" "+heigh);
 			this.barra.style.height = this.h+"px";
@@ -2088,7 +2128,7 @@ var TableLens = (function(args) {
 	  		//console.log(this.countclick +" "+this.moveto);
 	  		if(this.countclick==this.moveto){
 	  			this.countclick=0;
-	  			this.pos+=1;
+	  			this.pos+=3;
 	  			this.barra.style.top =this.pos+"px";
 	  			//console.log(this.barra.style.top);
 	  		}
@@ -2099,7 +2139,7 @@ var TableLens = (function(args) {
 	  		this.countclick+=1;
 	  		if(this.countclick==this.moveto){
 	  			this.countclick=0;
-	  			this.pos-=1;
+	  			this.pos-=3;
 	  			this.barra.style.top =this.pos+"px";
 	  		}
 	  	}
@@ -2112,7 +2152,32 @@ var TableLens = (function(args) {
 	  		this.up();
 	  	}
 	  	this.ant=mrow;
-	  }	
+	  },
+	  mousedown:function(evt){
+	  	this.statey = evt.clientY;
+	  	this.down = true;
+	  },
+	  mouseup:function(evt){
+	  	this.down = false;
+	  },
+	  mouseleave:function(evt){
+	  	this.down = false;
+	  },
+	  mousemove:function(evt){
+	  	if(this.down){
+		  	this.nstatey = evt.clientY;
+			if((this.nstatey - this.statey) > 0){
+				mrow = mrow+1>0? mrow+1:0;
+				barraRoll.roll();
+				TbLens.rolagem();
+			}else{
+					mrow = mrow-1>0? mrow-1:0;
+					barraRoll.roll();
+					TbLens.rolagem();
+			}
+		  	this.statey = this.nstatey;
+	  	}
+	  }
 	};
 
 	

@@ -4,6 +4,12 @@
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="normalize.css">
 	<style>
+		*{
+			-webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;          /* Likely future */  
+		}
 		body{
 			font: 16px sans-serif;
 		}
@@ -237,7 +243,7 @@ window.onload = function(){
  				if(downtime){
  					Tl.rolagem(-1)
  				}
- 			},200)
+ 			},100)
  	});
  	document.getElementById("top").addEventListener("mouseup",function(evt){
  		downtime = false;
@@ -251,7 +257,7 @@ window.onload = function(){
  				if(downtime){
  					Tl.rolagem(1)
  				}
- 			},200)
+ 			},100)
  	});
  	document.getElementById("down").addEventListener("mouseup",function(evt){
  		downtime = true;
