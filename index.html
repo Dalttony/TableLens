@@ -163,9 +163,14 @@
 
 		<input type="number" id="range" min="-10" value="-1" max="10" />
 		<div id='scale'></div>
-	
+	<fieldset>
+			  	<legend>Conjunto de dados</legend>
+				  	<input type="radio" name="db" onclick="db(1)" checked="true" /> <a> Avalição de carros </a>
+				  	<input type="radio" name="db" onclick="db(2)" /> <a > Recursos da bolsa família </a>
+			  </fieldset>
 	<fieldset>
 		<legend>Colors standard deviation, for mean,  max value</legend>
+			
 			  <fieldset>
 			  	<legend><input type="radio" name="x" onclick="colorchange(1)" checked="true" /> </legend>
 				  	<span style="background-color:#FF9933;"></span>
@@ -217,6 +222,8 @@
 <!--<script src="//d3js.org/ d3.v3.min.js" charset="utf-8"></script>-->
 <script src="TableLens.js"></script>
 <script>
+
+	
 var conf ={
 		width: 800,
 		height: 600,
@@ -227,9 +234,9 @@ var conf ={
 		container: "container",
 		datainput: "datainput"
 	}
-var Tl = new TableLens(conf);
+	var Tl;
 window.onload = function(){
-	
+	Tl = new TableLens(conf);
   	var downtime  = false, idinterval = 0;
  	document.getElementById("datainput").addEventListener('change',function(evt){
  		var fileInput = evt.target.files;
@@ -267,10 +274,14 @@ window.onload = function(){
  		var value = parseInt(this.value);
  		if(Tl.start()) Tl.setRowminHeight(value);
  	});
- 	document.getElementById("")
+ 	
 }
 function colorchange(evt){
-	Tl.color(evt);
-}
+		Tl.color(evt);
+	}
+
+	function db(id){
+		Tl.setdb(id);
+	}
 </script>
 </html>

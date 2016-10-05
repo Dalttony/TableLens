@@ -69,7 +69,10 @@ var TableLens = (function(args) {
 	 * @type {String}
 	 */
 	var dl = ";"
-
+	var db = {
+		_1:"",
+		_2:""
+	};
 	var conf = {
 		width: 800,
 		height: 600,
@@ -109,13 +112,35 @@ var TableLens = (function(args) {
 	var columns = {
 
 	};
+
+	//laoding the data
+			var http1 = new XMLHttpRequest();
+			http1.onload = function(){
+				db["_1"] = this.responseText;
+			};
+			http1.onloadend = function(){
+				self.readData();
+			};
+			http1.open("get","test.data",true)
+			http1.send();
+
+			var http2 = new XMLHttpRequest();
+			http2.onload = function(){
+				db["_2"] = this.responseText;
+			}
+			http2.open("get","recursos.data",true)
+			http2.send();
 	/**
 	 * @param {File} [data] [Data uncompressed for the rendering of the TL]
 	 */
+	 this.setdb = function(id){
 
-	this.readData = function(data){
+	 	var id = (id == null) ? 1:id;
+	 	return db["_"+id];
+	 }
+
+	this.readData = function(){
 		var initime = Date.now();
-		console.log((initime / 0.001));
 		var w = new Worker("reader.js");
 		  
 		var file = new FileReader();
@@ -128,15 +153,15 @@ var TableLens = (function(args) {
 				console.log(evt);
 		};
 
-		var loaded= function (evt){
+		//var loaded= function (evt){
 			/**
 			 * @type {Array String} [indata] get the structure of the data file 
 			 * @type {Array String} [columns] get the row [1] of the strings columns into structure of data in indata
 			 * @type {Array String} [type] get the row [0] of the string TypeColumns into structure of data in indata
 			 */
 			
-			
-			var indata = file.result.split("\n");
+			var str = this.setdb();
+			var indata = str.split("\n");
 			var type = indata[0].split(dl);
 			var strcolumns = indata[1].split(dl);
 			var len = strcolumns.length;
@@ -148,8 +173,8 @@ var TableLens = (function(args) {
 				DataColumn.push(cl);
 			};
 			var model = new TableModel(DataColumn);
-
-			w.postMessage({data:file.result,col_len:DataColumn.length});
+			
+			w.postMessage({data:str,col_len:DataColumn.length});
 			var dtv = [];
 			w.onmessage = function(e){
 		  		switch (e.data.obj){
@@ -175,7 +200,7 @@ var TableLens = (function(args) {
 		  return;
 			
 			//get te row into data file
-			i=2;//by starting in second file line
+			/*i=2;//by starting in second file line
 			for (var i = 2, len=indata.length; i <len ; i++) {
 				//aaray of data value
 				var dtv = [];
@@ -200,14 +225,16 @@ var TableLens = (function(args) {
 			var endtime = Date.now();
 			initime = (endtime - initime) * 0.001;
 			console.log("Time seg",initime);
-			//return {model,Datar};
-		};
+			//return {model,Datar};*/
+		//};
 
 		var init = function(){
-			file.onloadend = loaded;
+			/*file.onloadend = loaded;
 			file.onprogress = updateProgress;
 			file.error = errorProgress;
-			file.readAsText(data);
+			file.readAsText(data);*/
+
+			
 		};
 
 		// Check for the various File API support.
