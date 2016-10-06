@@ -171,10 +171,6 @@ var TableLens = (function(args) {
 				console.log(evt);
 		};
 
-		var loaded = function(){
-
-		}
-
 		var loaded= function (evt){
 
 			worker_db(this.result);
