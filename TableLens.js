@@ -114,17 +114,34 @@ var TableLens = (function(args) {
 	};
 
 	//laoding the data
-			var http1 = new XMLHttpRequest();
+	
+	function getXMLHttpRequest() 
+		{
+		    if (window.XMLHttpRequest) {
+		        return new window.XMLHttpRequest;
+		    }
+		    else {
+		        try {
+		            return new ActiveXObject("MSXML2.XMLHTTP.3.0");
+		        }
+		        catch(ex) {
+		            return null;
+		        }
+		    }
+		}
+
+			var http1 = getXMLHttpRequest();
 			http1.onload = function(){
 				db["_1"] = this.responseText;
 			};
 			http1.onloadend = function(){
-				self.readData();
+				self.setdb();
+				//self.readData();
 			};
 			http1.open("get","test.data",true)
 			http1.send();
 
-			var http2 = new XMLHttpRequest();
+			var http2 = getXMLHttpRequest();
 			http2.onload = function(){
 				db["_2"] = this.responseText;
 			}
@@ -134,16 +151,17 @@ var TableLens = (function(args) {
 	 * @param {File} [data] [Data uncompressed for the rendering of the TL]
 	 */
 	 this.setdb = function(id){
-
+	 	DataColumn =[];
+	 	DataRow = [];
 	 	var id = (id == null) ? 1:id;
-	 	return db["_"+id];
+	 	worker_db(db["_"+id]);
 	 }
 
-	this.readData = function(){
+
+	this.readData = function(data){
+			DataColumn =[];
+	 	DataRow = [];
 		var initime = Date.now();
-		var w = new Worker("reader.js");
-		  
-		var file = new FileReader();
 		
 		var	updateProgress = function(evt){
 			
@@ -153,14 +171,66 @@ var TableLens = (function(args) {
 				console.log(evt);
 		};
 
-		//var loaded= function (evt){
+		var loaded = function(){
+
+		}
+
+		var loaded= function (evt){
+
+			worker_db(this.result);
+			return;
 			/**
 			 * @type {Array String} [indata] get the structure of the data file 
 			 * @type {Array String} [columns] get the row [1] of the strings columns into structure of data in indata
 			 * @type {Array String} [type] get the row [0] of the string TypeColumns into structure of data in indata
 			 */
 			
-			var str = this.setdb();
+			//get te row into data file
+			i=2;//by starting in second file line
+			for (var i = 2, len=indata.length; i <len ; i++) {
+				//aaray of data value
+				var dtv = [];
+				if(indata[i].trim().length > 0){
+					var data = indata[i].split(dl);//split by delimiter 
+					var toCl = (data.length > columns.length) ? columns.length : data.length;//IF the length of data row  is greater than column count 
+					for (var c = 0, l = toCl; c < l; c++) {
+						//console.log(i-1);
+						var dv = new DataValue(i-1, DataColumn[c], data[c]);
+						//columns[c].addValue(data[c])
+						DataColumn[c].addDataValue(dv);
+						dtv.push(dv);
+					};
+					var r = new Row(dtv, i-2);
+					DataRow.push(r);
+				}
+			}
+			var i=0;
+			TbLens = new TableLens(model, DataRow);
+			ready = true;
+			var endtime = Date.now();
+			initime = (endtime - initime) * 0.001;
+			console.log("Time seg",initime);
+			//return {model,Datar};
+		};
+
+		var init = function(){
+			var file = new FileReader();
+			file.onloadend = loaded;
+			file.onprogress = updateProgress;
+			file.error = errorProgress;
+			file.readAsText(data);
+		};
+
+		// Check for the various File API support.
+		
+		if (window.File && window.FileReader && window.FileList && window.Blob) {
+			init();	
+		}else{
+		 		Log.addValue('The File APIs are not fully supported by your browser.',"a");	
+		}	
+	}
+
+	function worker_db(str){
 			var indata = str.split("\n");
 			var type = indata[0].split(dl);
 			var strcolumns = indata[1].split(dl);
@@ -173,6 +243,9 @@ var TableLens = (function(args) {
 				DataColumn.push(cl);
 			};
 			var model = new TableModel(DataColumn);
+		if(window.Worker){
+			var w = new Worker("reader.js");
+			
 			
 			w.postMessage({data:str,col_len:DataColumn.length});
 			var dtv = [];
@@ -194,13 +267,11 @@ var TableLens = (function(args) {
 						TbLens = new TableLens(model, DataRow);
 						ready = true;
 		  				break;
-
 		  		}
 		 	};
-		  return;
-			
-			//get te row into data file
-			/*i=2;//by starting in second file line
+		 }else{
+		 	//get te row into data file
+			i=2;//by starting in second file line
 			for (var i = 2, len=indata.length; i <len ; i++) {
 				//aaray of data value
 				var dtv = [];
@@ -208,7 +279,6 @@ var TableLens = (function(args) {
 					var data = indata[i].split(dl);//split by delimiter 
 					var toCl = (data.length > columns.length) ? columns.length : data.length;//IF the length of data row  is greater than column count 
 					for (var c = 0, l = toCl; c < l; c++) {
-						
 						//console.log(i-1);
 						var dv = new DataValue(i-1, DataColumn[c], data[c]);
 						//columns[c].addValue(data[c])
@@ -225,37 +295,19 @@ var TableLens = (function(args) {
 			var endtime = Date.now();
 			initime = (endtime - initime) * 0.001;
 			console.log("Time seg",initime);
-			//return {model,Datar};*/
-		//};
+		 }
+	}
 
-		var init = function(){
-			/*file.onloadend = loaded;
-			file.onprogress = updateProgress;
-			file.error = errorProgress;
-			file.readAsText(data);*/
-
-			
-		};
-
-		// Check for the various File API support.
-		if (window.File && window.FileReader && window.FileList && window.Blob) {
-		 
-		  
-		   init();
-		} else {
-			Log.addValue('The File APIs are not fully supported by your browser.',"a");
-		}
-		
-	};
 	this.rolagem = function(acdc){
 		mrow = mrow+acdc>0? mrow+acdc:0;
 		barraRoll.roll();
 		TbLens.rolagem();
-
 	};
+
 	this.start = function(){
 			return	ready;
 	};
+
 	this.setRowminHeight = function(h){
 		verificamovida=true;
 		TbLens.setRowminHeight(h);
@@ -487,12 +539,13 @@ var TableLens = (function(args) {
 		}
 
 		var scale = document.getElementById('scale');
-		 
-		for(var i=1;i<100;i++){
+		if(scale.children.length == 0){
+			for(var i=1;i<100;i++){
 				var color =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},i/99);
 				var div = document.createElement('div');
 				div.style.backgroundColor = " rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")";
 				scale.appendChild(div);
+			}
 		}
 
 	
@@ -848,6 +901,10 @@ var TableLens = (function(args) {
 		
 			var div = TableLensUtil.ById(conf.container);
 			var div2 = document.getElementById("container2");
+			if(div.lastElementChild instanceof HTMLCanvasElement){
+				div.removeChild(div.children[1]);
+				div.removeChild(div.lastElementChild);
+			}
 			var w = conf.width + 1, h=conf.height + 1; //width of canvas
 			
 			var divcl = TableLensUtil.createElement("div");
@@ -943,6 +1000,7 @@ var TableLens = (function(args) {
 			div.appendChild(canvas);
 			div2.appendChild(canvas2);
 			rol.style.height = div.clientHeight+"px";
+
 	}
 
 		this.resizeColumn = function(){
