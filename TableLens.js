@@ -159,7 +159,7 @@ var TableLens = (function(args) {
 
 
 	this.readData = function(data){
-			DataColumn =[];
+		DataColumn =[];
 	 	DataRow = [];
 		var initime = Date.now();
 		
