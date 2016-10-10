@@ -149,15 +149,83 @@
 			width: 400px;
 			z-index: 1;
 		}
+		#load{
+			background: rgba(255,255,255,0.5);
+			justify-content: center;
+			height: 100%;
+			position: absolute;
+			text-align: center;
+			width: 100%;
+			z-index: 2;
+		}
+		#load > span{
+			border-top:10px solid yellow;
+			border-left:10px solid #FF9933;
+			border-right:10px solid blue;
+			border-bottom:10px solid red;
+			height: 60px;
+			margin-top: 200px;
+			padding: 5px;
+			position: absolute;
+			width: 60px;
+			font-weight: bold;
+			animation: 1s linear 0s infinite normal load;
+			-o-animation: 1s linear 0s infinite normal load;
+			-moz-animation: 1s linear 0s infinite  normal load;
+			-webkit-animation: 1s linear 0s infinite normal load;
+		}
+		@-webkit-keyframes load{
+
+		}
+		@-o-keyframes{
+
+		}
+		@-moz-keyframes{
+
+		}		
+		@keyframes load{
+			15%{
+				border-top:10px solid yellow;
+				border-left:10px solid #FF9933;
+				border-right:10px solid blue;
+				border-bottom:10px solid red;	
+			}
+			30%{
+				border-top:10px solid red;
+				border-left:10px solid yellow;
+				border-right:10px solid #FF9933 
+				border-bottom:10px solid blue;
+			}
+			70%{
+					border-top:10px solid blue;
+					border-left:10px solid red;
+					border-right:10px solid yellow;
+					border-bottom:10px solid  #FF9933;
+			}
+			90%{
+				border-top:10px solid #FF9933;
+				border-left:10px solid blue;
+				border-right:10px solid red ;
+				border-bottom:10px solid  yellow;
+			}
+			100%{
+				border-top:10px solid yellow;
+				border-left:10px solid #FF9933;
+				border-right:10px solid blue;
+				border-bottom:10px solid red;	
+			}
+		}
 	</style>
 	<title>Table Lens</title>
 </head>
 <body>
-	
+	<div id="load" style="visibility:hidden"><span> Loading</span></div>
 	<form>
 		<input type="file" id="datainput">
 	</form>
+
 	<div id="con">
+	
 		<div id="container">
 			<div id="rolagem">
 				<span id="top"></span>

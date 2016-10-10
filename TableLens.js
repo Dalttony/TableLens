@@ -46,6 +46,7 @@ var TableLens = (function(args) {
 	var ctx2;
 	var cvs; //canvas 
 	var canvas2 = document.createElement("canvas");
+	var ctxcache;
 	var DataRow = [];
 	var DataColumn = [];
 	var viewModel;
@@ -97,6 +98,7 @@ var TableLens = (function(args) {
 
 	//Verify data args withc conf
 	var sort=false;
+
 	
 	//----------------------	
 
@@ -151,6 +153,7 @@ var TableLens = (function(args) {
 	 * @param {File} [data] [Data uncompressed for the rendering of the TL]
 	 */
 	 this.setdb = function(id){
+	  	
 	 	DataColumn =[];
 	 	DataRow = [];
 	 	var id = (id == null) ? 1:id;
@@ -227,6 +230,9 @@ var TableLens = (function(args) {
 	}
 
 	function worker_db(str){
+		setTimeout(function(){
+	  		document.getElementById("load").style.visibility ="visible";
+	  },1)
 			var indata = str.split("\n");
 			var type = indata[0].split(dl);
 			var strcolumns = indata[1].split(dl);
@@ -292,6 +298,7 @@ var TableLens = (function(args) {
 			initime = (endtime - initime) * 0.001;
 			console.log("Time seg",initime);
 		 }
+		
 	}
 
 	this.rolagem = function(acdc){
@@ -315,7 +322,8 @@ var TableLens = (function(args) {
 	}
 	this.color =function(idcolor){
 		TbLens.colorValues(idcolor);
-		TbLens.setRowminHeight(TbLens.getRowHeight());
+
+		//TbLens.setRowminHeight(TbLens.getRowHeight());
 	}
 	/**
 	 * [TableLens main class for represent]
@@ -353,6 +361,7 @@ var TableLens = (function(args) {
 						id += rows[i] ? rows[i].getHeight() : 0;
 						if( irow <= id && ( id >= irow)){
 							if(rows[i].getFeyes()){
+								linefieyes = -1;
 								rows[i].setHeight(conf.min_row_height);
 								rows[i].fEyes(false);
 							}
@@ -506,7 +515,8 @@ var TableLens = (function(args) {
 
 		this.colorDrawed = function(id){
 			this.color = _color["_"+id];
-			this.render(this.rowCompressed);
+			console.log(-this.rowCompressed);
+			this.render(-this.rowCompressed);
 		}
 		/**
 		 * [sort Sorting the datarow]
@@ -827,8 +837,8 @@ var TableLens = (function(args) {
 				var v = vlsum/len;
 				v =(v * column.getwidth())/column.getMaxValue();
 				//column.draw(dstpos,id,1);
-				ctx.fillStyle=grad;
-				ctx.fillRect(column.offset,id,vlmax,1);
+				//ctx.fillStyle=grad;
+				//ctx.fillRect(column.offset,id,vlmax,1);
 				//drawing maximum value into the other canvas
 				var grad2 = ctx2.createLinearGradient(column.offset,id,column.offset+vlmax,id);
 				var dstgrad = dstpos/vlmax;
@@ -848,18 +858,18 @@ var TableLens = (function(args) {
 				
 
 				conf.color="red"
-				ctx.fillStyle=this.color[0];
-				ctx.strokeStyle=this.color[0]; //"rgb(243,111,39)";
+				//ctx.fillStyle=this.color[0];
+				//ctx.strokeStyle=this.color[0]; //"rgb(243,111,39)";
 				//ctx2.fillStyle=this.color[0];
 				//ctx2.strokeStyle=this.color[0]; //"rgb(243,111,39)";
 				//ctx.lineCap="round";
 				//if(column.getIndex()==2){
-				ctx.lineWidth = 1;
+				//ctx.lineWidth = 1;
 				ctx2.lineWidth = 1;
 					if(id == 0){
-						ctx.beginPath();
-						ctx.moveTo(column.offset,id);
-						ctx.lineTo(column.offset+dstpos+3,id)
+						///ctx.beginPath();
+						///ctx.moveTo(column.offset,id);
+						//ctx.lineTo(column.offset+dstpos+3,id)
 
 						//ctx2.beginPath();
 						//ctx2.moveTo(column.offset,id);
@@ -867,10 +877,10 @@ var TableLens = (function(args) {
 					} 
 					if(id > 0){
 						
-						ctx.moveTo(column.offset,id);
-						ctx.lineTo(column.offset+dstpos+3,id);
+					//	ctx.moveTo(column.offset,id);
+					//	ctx.lineTo(column.offset+dstpos+3,id);
 
-						ctx2.moveTo(column.offset,id);
+						//ctx2.moveTo(column.offset,id);
 						//ctx2.lineTo(column.offset+dstpos+3,id);
 						
 						//console.log(column.offset+dstpos+5,id);
@@ -878,11 +888,11 @@ var TableLens = (function(args) {
 					
 					if(id == parseInt((model.getRowCount()-1)/this.rowCompressed )){
 
-						ctx.lineTo(column.offset,id);
+					///	ctx.lineTo(column.offset,id);
 						//ctx2.lineTo(column.offset,id);
 						//ctx.closePath();
 					}
-					ctx.stroke();
+					//ctx.stroke();
 					//ctx2.stroke();
 					//ctx.fillRect(column.offset+dstpos+4,id,1,1);
 				//}
@@ -1255,8 +1265,9 @@ var TableLens = (function(args) {
 				var data = rwdata[v].getData();
 				var hi = rwdata[v].getHeight();
 				var fyes = rwdata[v].getFeyes()
-
+				
 				for (; i <len; i++) {
+
 				//	rwdata[v].ele.appendChild(data[i].ele);
 							data[i].feyes(fyes);
 							data[i].setId(id);
@@ -1323,8 +1334,9 @@ var TableLens = (function(args) {
 				
 		},
 		render:function(h){
-			mxrow=0;
-				cvs.width = cvs.width;
+			mxro=0;
+
+			if(h > -2) cvs.width = cvs.width;
 				canvas2.width = canvas2.width
 			i=0
 			h=h==0||h==-1?1:h;
@@ -1338,7 +1350,8 @@ var TableLens = (function(args) {
 			}
 			if(h<conf.min_row_height-1) this.drawCompressed(h)
 			if(h>conf.min_row_height-1) this.draw(h);
-			
+
+			 document.getElementById("load").style.visibility ="hidden";
 		}
 	}
  	/**
