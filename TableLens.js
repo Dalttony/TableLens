@@ -265,7 +265,6 @@ var TableLens = (function(args) {
 				  					var r = new Row(dtv, e.data.id);
 				  					//var r = new Row(dtv, i-2);
 									DataRow.push(r);
-									resolve(r);
 									dtv = [];
 				  				break;
 				  			case 3: // finished the reader
