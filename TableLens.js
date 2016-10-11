@@ -275,7 +275,7 @@ var TableLens = (function(args) {
 				  				break;
 				  		}
 				 	};
-			 	});
+			 
 		 }else{
 		 	//get te row into data file
 			i=2;//by starting in second file line
