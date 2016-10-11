@@ -55,6 +55,7 @@ var TableLens = (function(args) {
 	var verificamovida=false;
 	var ready = false;
 	var linefieyes = -1;
+	var loadpromise;
 	/**
 	 * [doc   document object of the broswer]
 	 * @type {[Object broswer]}
@@ -230,47 +231,51 @@ var TableLens = (function(args) {
 	}
 
 	function worker_db(str){
-		setTimeout(function(){
-	  		document.getElementById("load").style.visibility ="visible";
-	  },1)
-			var indata = str.split("\n");
-			var type = indata[0].split(dl);
-			var strcolumns = indata[1].split(dl);
-			var len = strcolumns.length;
-			i=0;
-			for (; i<len; i++){
-				// Factory of the  type Column 
-				var cl = ColumnFactory(strcolumns[i].trim(), type[i].trim());
-				cl.setIndex(i);
-				DataColumn.push(cl);
-			};
-			var model = new TableModel(DataColumn);
-		if(window.Worker){
-			var w = new Worker("reader.js");
-			
-			
-			w.postMessage({data:str,col_len:DataColumn.length});
-			var dtv = [];
-			w.onmessage = function(e){
-		  		switch (e.data.obj){
-		  			case 1://case column
-		  				var dv = new DataValue(e.data.id, DataColumn[e.data.column], e.data.data);
-		  				DataColumn[e.data.column].addDataValue(dv);
-		  				dtv.push(dv);
-		  				break;
-		  			case 2: //case Row
-		  					var r = new Row(dtv, e.data.id);
-		  					//var r = new Row(dtv, i-2);
-							DataRow.push(r);
-							dtv = [];
-		  				break;
-		  			case 3: // finished the reader
-		  				var i=0;
-						TbLens = new TableLens(model, DataRow);
-						ready = true;
-		  				break;
-		  		}
-		 	};
+		
+			document.getElementById("load").style.visibility = "visible";
+		
+	  	
+	  	
+	  
+				var indata = str.split("\n");
+				var type = indata[0].split(dl);
+				var strcolumns = indata[1].split(dl);
+				var len = strcolumns.length;
+				i=0;
+				for (; i<len; i++){
+					// Factory of the  type Column 
+					var cl = ColumnFactory(strcolumns[i].trim(), type[i].trim());
+					cl.setIndex(i);
+					DataColumn.push(cl);
+				};
+				var model = new TableModel(DataColumn);
+			if(window.Worker){
+				
+					var w = new Worker("reader.js");			
+					w.postMessage({data:str,col_len:DataColumn.length});
+					var dtv = [];
+					w.onmessage = function(e){
+				  		switch (e.data.obj){
+				  			case 1://case column
+				  				var dv = new DataValue(e.data.id, DataColumn[e.data.column], e.data.data);
+				  				DataColumn[e.data.column].addDataValue(dv);
+				  				dtv.push(dv);
+				  				break;
+				  			case 2: //case Row
+				  					var r = new Row(dtv, e.data.id);
+				  					//var r = new Row(dtv, i-2);
+									DataRow.push(r);
+									resolve(r);
+									dtv = [];
+				  				break;
+				  			case 3: // finished the reader
+				  				var i=0;
+								TbLens = new TableLens(model, DataRow);
+								ready = true;
+				  				break;
+				  		}
+				 	};
+			 	});
 		 }else{
 		 	//get te row into data file
 			i=2;//by starting in second file line
@@ -298,7 +303,6 @@ var TableLens = (function(args) {
 			initime = (endtime - initime) * 0.001;
 			console.log("Time seg",initime);
 		 }
-		
 	}
 
 	this.rolagem = function(acdc){
@@ -642,7 +646,7 @@ var TableLens = (function(args) {
 				var c = Math.floor(Math.random() * data.length) - 1;
 				c=c<0?0:c;
 				
-				column.draw(data[c].getValue(),id,1);
+				//column.draw(data[c].getValue(),id,1);
 			}
 			
 			//draw the value for 
@@ -841,10 +845,16 @@ var TableLens = (function(args) {
 				//ctx.fillRect(column.offset,id,vlmax,1);
 				//drawing maximum value into the other canvas
 				var grad2 = ctx2.createLinearGradient(column.offset,id,column.offset+vlmax,id);
-				var dstgrad = dstpos/vlmax;
-				var lavggrad = lavg / vlmax;
+				var dstgrad =0;
+				var lavggrad = 0;
+				var diff = 0;
+				if(vlmax >0){
+					dstgrad = dstpos/vlmax;
+					lavggrad = lavg / vlmax;
+					diff = lavggrad - 0.03;
+				}
 				grad2.addColorStop(dstgrad, this.color[0]);
-				grad2.addColorStop(lavggrad - 0.03, this.color[1]);
+				grad2.addColorStop(diff, this.color[1]);
 				grad2.addColorStop(lavggrad, this.color[1]);
 				grad2.addColorStop(1, this.color[2]);
 				ctx2.fillStyle = grad2;
@@ -1336,7 +1346,7 @@ var TableLens = (function(args) {
 		render:function(h){
 			mxro=0;
 
-			if(h > -2) cvs.width = cvs.width;
+			if( h > -2)	cvs.width = cvs.width;
 				canvas2.width = canvas2.width
 			i=0
 			h=h==0||h==-1?1:h;
@@ -1352,6 +1362,7 @@ var TableLens = (function(args) {
 			if(h>conf.min_row_height-1) this.draw(h);
 
 			 document.getElementById("load").style.visibility ="hidden";
+			 ///document.getElementById("load").className ="";
 		}
 	}
  	/**
