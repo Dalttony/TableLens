@@ -265,6 +265,7 @@ var TableLens = (function(args) {
 				  					var r = new Row(dtv, e.data.id);
 				  					//var r = new Row(dtv, i-2);
 									DataRow.push(r);
+								
 									dtv = [];
 				  				break;
 				  			case 3: // finished the reader
@@ -618,18 +619,21 @@ var TableLens = (function(args) {
 				}
 			}
 			if(linefieyes > -1){
-
+				
 				if(id < linefieyes){
-					ctx.filter = "blur(1px)"; 
+					ctx2.filter = "blur(1px)"; 
 				}
-
-				if(id > linefieyes + conf.max_row_height){
-					ctx.filter = "blur(1px)";
+				if(id > linefieyes+conf.max_row_height){
+					ctx2.filter = "blur(1px)";
 				}
-
 				if(id == linefieyes){
-					ctx.restore()
-					ctx.save();
+
+					ctx2.restore();
+					
+					ctx2.save();
+					ctx2.fillStyle="white";
+					ctx2.rect(column.offset,id,column.getwidth(),conf.max_row_height);
+					ctx2.fill();
 				}
 
 			}
@@ -1306,35 +1310,19 @@ var TableLens = (function(args) {
 			var inslacke = Math.round(vlen / h);
 			var lack = (inslacke * h) - vlen;
 			var add = lack;
-			ctx.save();
+			ctx2.save();
 			for (; i <len; i++) {
 				
 				for (; v < vlen; v+=h) {
 					hi = rwdata[v].getHeight();
 					var newrw = rwdata.slice(v,v+h);
-					
 					for(var d=0;d<newrw.length;d++){
 						var dd= newrw[d].getData();
 						datacompressed.push(dd[i])
 					}
 					this.drawCompressedData(datacompressed,id);
-					id++;
-					//datacompressed.push(data[i])
-					datacompressed = []
-				//	console.log(v);
-					//var data = rwdata[v].getData();
-					//var col = data[i].getColumn();
-					/*if(datacompressed.length==h){
-						//col.getValue(v).drawCompressed(datacompressed,id);
-						//data[i].drawCompressed(datacompressed,id);
-						//console.log(datacompressed);
-						//this.drawCompressedData(datacompressed,id);
-							datacompressed = []
-							
-							c=0;
-					}*/
-					
-							
+					id++;					
+					datacompressed = []							
 				}
 				mxrow=id;
 				v=0;
