@@ -41,6 +41,7 @@ var TableLens = (function(args) {
 	 * @private object {_self}
 	 * @privte Context2D {_ctx}
 	 */
+	var load;
 	var self = this;
 	var ctx; //context 
 	var ctx2;
@@ -232,8 +233,9 @@ var TableLens = (function(args) {
 
 	function worker_db(str){
 		
-			document.getElementById("load").style.visibility = "visible";
-		
+			load = setInterval(function(){
+				document.getElementById("load").style.visibility = "visible";
+			},1);
 	  	
 	  	
 	  
@@ -250,32 +252,109 @@ var TableLens = (function(args) {
 				};
 				var model = new TableModel(DataColumn);
 			if(window.Worker){
-				
-					var w = new Worker("reader.js");			
-					w.postMessage({data:str,col_len:DataColumn.length});
-					var dtv = [];
+					
+					var w = new Worker("reader.js");
+					var w1 = new Worker("reader.js");
+					var w2 = new Worker("reader.js");
+					var workers = [];
+					var div = Math.round((indata.length-2)/3);
+					console.log(div);
+					var d1 = indata.slice(2,div), d2 = indata.slice(div+1,div*2),d3 = indata.slice(div*2+1);
+					w.postMessage({data:d1,col_len:DataColumn.length});
+					var end=0;
+					var dtv = [],dtv1 = [],dtv2 = [];
+					var id =0;
 					w.onmessage = function(e){
 				  		switch (e.data.obj){
 				  			case 1://case column
-				  				var dv = new DataValue(e.data.id, DataColumn[e.data.column], e.data.data);
+				  				/*var dv = new DataValue(e.data.id, DataColumn[e.data.column], e.data.data);
 				  				DataColumn[e.data.column].addDataValue(dv);
 				  				dtv.push(dv);
-				  				break;
+				  				break;*/
 				  			case 2: //case Row
-				  					var r = new Row(dtv, e.data.id);
+				  					id++;
+				  					for(var c =0; c< e.data.data.length;c++){
+				  						
+				  						var dv = new DataValue(id, DataColumn[c], e.data.data[c]);
+				  						DataColumn[c].addDataValue(dv);
+				  						dtv.push(dv);
+				  					}
+				  					var r = new Row(dtv, id);
 				  					//var r = new Row(dtv, i-2);
 									DataRow.push(r);
-								
 									dtv = [];
+							
 				  				break;
 				  			case 3: // finished the reader
-				  				var i=0;
-								TbLens = new TableLens(model, DataRow);
-								ready = true;
-				  				break;
+					  				end++;
+					  				console.log(end);
+				  				if(end == 3){
+					  				var i=0;
+									TbLens = new TableLens(model, DataRow);
+									ready = true;
+					  				break;
+				  				}
 				  		}
 				 	};
-			 
+				 	w1.postMessage({data:d2,col_len:DataColumn.length});
+				 	w1.onmessage = function(e){
+				  		switch (e.data.obj){
+				  			case 1://case column
+				  				
+				  				break;
+				  			case 2: //case Row
+				  					id++;
+				  					for(var c =0; c< e.data.data.length;c++){
+				  						var dv = new DataValue(id, DataColumn[c], e.data.data[c]);
+				  						DataColumn[c].addDataValue(dv);
+				  						dtv1.push(dv);
+				  					}
+				  					var r = new Row(dtv1,id);
+				  					//var r = new Row(dtv, i-2);
+									DataRow.push(r);
+									dtv1 = [];
+
+				  				break;
+				  			case 3: // finished the reader
+				  				end++;
+				  				if(end == 3){
+					  				var i=0;
+									TbLens = new TableLens(model, DataRow);
+									ready = true;
+					  				break;
+				  				}
+				  		}
+				 	};
+			 w2.postMessage({data:d3,col_len:DataColumn.length});
+				 	w2.onmessage = function(e){
+				  		switch (e.data.obj){
+				  			case 1://case column
+				  				
+				  				break;
+				  			case 2: //case Row
+				  					id++;
+				  					for(var c =0; c< e.data.data.length;c++){
+				  						var dv = new DataValue(id, DataColumn[c], e.data.data[c]);
+				  						DataColumn[c].addDataValue(dv);
+				  						dtv2.push(dv);
+				  					}
+				  					var r = new Row(dtv2,id);
+				  					//var r = new Row(dtv, i-2);
+									DataRow.push(r);
+									dtv2 = [];
+
+				  				break;
+				  			case 3: // finished the reader
+				  				end++;
+				  				console.log(end);
+				  				if(end == 3){
+					  				var i=0;
+									TbLens = new TableLens(model, DataRow);
+									ready = true;
+					  				break;
+				  				}
+				  		}
+				 	};
 		 }else{
 		 	//get te row into data file
 			i=2;//by starting in second file line
@@ -357,11 +436,11 @@ var TableLens = (function(args) {
 
 		};
 		this.fishEyes = function(irow){
-			//if(rows.length >= irow){
+			//if(rows.length >= irow){,
+			
 				var i = 0;
-				var len =  rows.length;
 				var id = -1;
-				for (; i <= irow; i++) {
+				for (; i <= irow && i < rows.length / Math.abs(rowHeight) ; i++) {
 						id += rows[i] ? rows[i].getHeight() : 0;
 						if( irow <= id && ( id >= irow)){
 							if(rows[i].getFeyes()){
@@ -377,11 +456,11 @@ var TableLens = (function(args) {
 							}
 							break;
 						}else{
-
+							linefieyes=-1;
 						}
 						
 				}
-				
+				console.log(linefieyes);
 				viewModel.render(rowHeight);
 			//}
 		}
@@ -413,6 +492,7 @@ var TableLens = (function(args) {
 	var TableLensView = function(model,rows){
 		var self = this;
 		var model = model;
+		this.renderid =0;
 		this.rows = rows;
 		this.table = document.getElementById("TableLens");;
 		self.body = document.createElement("tbody");
@@ -570,7 +650,7 @@ var TableLens = (function(args) {
 			
 			
 				
-			
+			this.renderid ++;
 			var i = 0;
 			var len = data.length;
 			var op = 1/len;
@@ -618,26 +698,47 @@ var TableLens = (function(args) {
 					}
 				}
 			}
+			if(column instanceof IntegerColumn || column instanceof DoubleColumn ){
 			if(linefieyes > -1){
 				
 				if(id < linefieyes){
 					ctx2.filter = "blur(1px)"; 
 				}
-				if(id > linefieyes+conf.max_row_height){
+				if(id > linefieyes + conf.max_row_height * data.length){
 					ctx2.filter = "blur(1px)";
 				}
 				if(id == linefieyes){
-
-					ctx2.restore();
 					
+					ctx2.restore();
 					ctx2.save();
+					//ctx2.shadowColor = "white";
+					ctx2.shadowBlur  = 5;
+					ctx2.strokeStyle = "white";
 					ctx2.fillStyle="white";
-					ctx2.rect(column.offset,id,column.getwidth(),conf.max_row_height);
+					i=0;
+					var pos = this.renderid;
+					var squares = Math.floor(column.getwidth()/data.length);
+						/**
+						 * [Made the Histograma when is able the fisheyes interaction]
+						 * @param  {[type]} ;i<data.length;i++ [description]
+						 * @return {[type]}                    [description]
+						 */
+					for(;i<data.length;i++){
+						var h = (data[i].getValue() * (conf.max_row_height-3) * data.length)/data[pmax].getValue();
+						var py = Math.abs(((conf.max_row_height-3) * data.length) - h);
+						ctx2.fillStyle = this.color[1];
+						ctx2.fillRect(column.offset+(i*squares)+3,linefieyes + py+column.padding,squares-3,h);
+						ctx2.fillStyle	= "white";
+						ctx2.fillText(data[i].getValue().toString().trim(),column.offset+(i*squares)+4,linefieyes + py+column.padding + h-5,squares-5);
+						//ctx2.rect(column.offset,this.renderid,column.getwidth()+column.padding,conf.max_row_height);
+						this.renderid+=conf.max_row_height;
+
+					}
 					ctx2.fill();
 				}
 
 			}
-			
+			}
 
 			
 
@@ -864,7 +965,7 @@ var TableLens = (function(args) {
 				ctx2.strokeStyle = grad2;
 				
 				//ctx2.fillStyle = this.color[2];
-				ctx2.fillRect(column.offset,id,vlmax,1);
+				ctx2.fillRect(column.offset,this.renderid,vlmax,1);
 /**/			//drawing average value
 				//ctx2.fillStyle = this.color[1];
 				//ctx2.fillRect(column.offset,id,lavg,1);
@@ -1278,9 +1379,7 @@ var TableLens = (function(args) {
 				var data = rwdata[v].getData();
 				var hi = rwdata[v].getHeight();
 				var fyes = rwdata[v].getFeyes()
-				
 				for (; i <len; i++) {
-
 				//	rwdata[v].ele.appendChild(data[i].ele);
 							data[i].feyes(fyes);
 							data[i].setId(id);
@@ -1295,7 +1394,7 @@ var TableLens = (function(args) {
 
 		},
 		drawCompressed:function(h){
-			
+			this.renderid = 0;
 			var rwdata = this.rows;
 			h = Math.abs(h);
 			var len = this.getCountDataColumn();
@@ -1320,13 +1419,14 @@ var TableLens = (function(args) {
 						var dd= newrw[d].getData();
 						datacompressed.push(dd[i])
 					}
-					this.drawCompressedData(datacompressed,id);
+					this.drawCompressedData(datacompressed,this.renderid);
 					id++;					
 					datacompressed = []							
 				}
 				mxrow=id;
 				v=0;
 				id=0;
+				this.renderid = 0;
 			}
 				
 		},
@@ -1349,6 +1449,7 @@ var TableLens = (function(args) {
 			if(h>conf.min_row_height-1) this.draw(h);
 
 			 document.getElementById("load").style.visibility ="hidden";
+			 clearInterval(load);
 			 ///document.getElementById("load").className ="";
 		}
 	}
