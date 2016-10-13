@@ -287,7 +287,6 @@ var TableLens = (function(args) {
 				  				break;
 				  			case 3: // finished the reader
 					  				end++;
-					  				console.log(end);
 				  				if(end == 3){
 					  				var i=0;
 									TbLens = new TableLens(model, DataRow);
@@ -346,7 +345,7 @@ var TableLens = (function(args) {
 				  				break;
 				  			case 3: // finished the reader
 				  				end++;
-				  				console.log(end);
+				  				
 				  				if(end == 3){
 					  				var i=0;
 									TbLens = new TableLens(model, DataRow);
@@ -729,7 +728,8 @@ var TableLens = (function(args) {
 						ctx2.fillStyle = this.color[1];
 						ctx2.fillRect(column.offset+(i*squares)+3,linefieyes + py+column.padding,squares-3,h);
 						ctx2.fillStyle	= "white";
-						ctx2.fillText(data[i].getValue().toString().trim(),column.offset+(i*squares)+4,linefieyes + py+column.padding + h-5,squares-5);
+						var text = ctx2.measureText(data[i].getValue().toString().trim());
+						ctx2.fillText(data[i].getValue().toString().trim(),column.offset+(i*squares)+Math.floor(squares/2)-Math.floor(text.width/2),linefieyes + py+column.padding + h-2,squares-2);
 						//ctx2.rect(column.offset,this.renderid,column.getwidth()+column.padding,conf.max_row_height);
 						this.renderid+=conf.max_row_height;
 
