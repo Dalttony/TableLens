@@ -151,6 +151,14 @@ var TableLens = (function(args) {
 			}
 			http2.open("get","recursos.data",true)
 			http2.send();
+
+			var http3 = getXMLHttpRequest();
+			http3.onload = function(){
+				
+				db["_3"] = this.responseText;
+			};
+			http3.open("get","winequality-white.data",true)
+			http3.send();
 	/**
 	 * @param {File} [data] [Data uncompressed for the rendering of the TL]
 	 */
@@ -602,29 +610,40 @@ var TableLens = (function(args) {
 			this.render(-this.rowCompressed);
 		}
 		/**
-		 * [sort Sorting the datarow]
+		 * [Sorting the datarow]
 		 * @param  {[Integer]} id [Culumn Id]
 		 */
 		this.sort = function(id){
+			bubbleSort(id);
+			this.render(TbLens.getRowHeight());
+		}
+		/**
+		 * [BlubbleSort sorting]
+		 * @param  {[Integer]} id [Culumn Id]
+		 */
+		function bubbleSort(id){
 			var sorting;
 			var sorted = model.getColumn(id).getSort();
-			for (var i = this.rows.length - 1; i >= 0; i--) {
+			for (var i = self.rows.length - 1; i >= 0; i--) {
 				for (var j = 0; j < i; j++) {
 					if(sorted==enumsort.asc)
-						sorting = this.rows[j].getData()[id].getValue()>this.rows[j+1].getData()[id].getValue();
+						sorting = self.rows[j].getData()[id].getValue()>self.rows[j+1].getData()[id].getValue();
 					if(sorted==enumsort.desc) 
-						sorting = this.rows[j].getData()[id].getValue()<this.rows[j+1].getData()[id].getValue();
+						sorting = self.rows[j].getData()[id].getValue()<self.rows[j+1].getData()[id].getValue();
 						if(sorting) {
-					        var aux = this.rows[j];
-					        var x = this.rows[j].getData()[id].getIndex();
-							this.rows[j].setDataValueIndex(this.rows[j+1].getData()[id].getIndex());    
-					        this.rows[j] = this.rows[j+1];
-	 						this.rows[j+1].setDataValueIndex(x);
-					        this.rows[j+1] = aux;
+					        var aux = self.rows[j];
+					        var x = self.rows[j].getData()[id].getIndex();
+							self.rows[j].setDataValueIndex(self.rows[j+1].getData()[id].getIndex());    
+					        self.rows[j] = self.rows[j+1];
+	 						self.rows[j+1].setDataValueIndex(x);
+					        self.rows[j+1] = aux;
 					    }
 				}
 			}
-			this.render(TbLens.getRowHeight());
+		}
+
+		function mergeSort(id){
+			
 		}
 
 		var scale = document.getElementById('scale');
