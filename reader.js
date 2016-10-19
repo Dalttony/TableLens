@@ -26,7 +26,7 @@ this.addEventListener("message",function(e){
 			}
 
 	initime = Date.now() - initime;
-	console.log(initime * 0.001);
+	// console.log(initime * 0.001);
 	postMessage({obj:3})
 	//this.close();
 });
