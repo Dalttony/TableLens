@@ -8,7 +8,8 @@
 			-webkit-user-select: none;  /* Chrome all / Safari all */
   -moz-user-select: none;     /* Firefox all */
   -ms-user-select: none;      /* IE 10+ */
-  user-select: none;          /* Likely future */  
+  user-select: none;          /* Likely future */ 
+
 		}
 		body{
 			position: relative;
@@ -36,7 +37,7 @@
 		#rolagem{
 			width: 25px;
 			height: 600px;
-			border:1px solid #737373;
+			/*border:1px solid #737373;*/
 			position: relative;
 			float: right;
 			visibility: hidden;
@@ -46,14 +47,35 @@
 			width: 25px;
 			height: 30px;
 			position: absolute;
-			border: 1px solid #737373;
-			
+			/*border: 1px solid #737373;*/
 		}
 		#rolagem span:first-child{
 			top: 0;
 		}
 		#rolagem span:last-child{
 			bottom: 0;
+			
+		}
+		#rolagem span:first-child:before{
+			content: "";
+			border-top: 5px solid transparent;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-bottom: 25px solid blue;
+			position: absolute;
+			top:-5px;
+			left: 2px;
+		}
+
+		#rolagem span:last-child:before{
+			content: "";
+			border-top: 25px solid blue;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-bottom: 5px solid transparent;
+			position: absolute;
+			top:5px;
+			left: 2px;
 		}
 		#barra{
 			display: block;

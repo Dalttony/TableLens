@@ -78,7 +78,7 @@ var TableLens = (function(args) {
 	};
 	var conf = {
 		width: 800,
-		height: 600,
+		height: 800,
 		min_row_height: 1,
 		max_row_height: 15,
 		minwidthcol: 20,
@@ -266,7 +266,6 @@ var TableLens = (function(args) {
 					var w2 = new Worker("reader.js");
 					var workers = [];
 					var div = Math.round((indata.length-2)/3);
-					console.log(div);
 					var d1 = indata.slice(2,div), d2 = indata.slice(div+1,div*2),d3 = indata.slice(div*2+1);
 					w.postMessage({data:d1,col_len:DataColumn.length});
 					var end=0;
@@ -614,8 +613,13 @@ var TableLens = (function(args) {
 		 * @param  {[Integer]} id [Culumn Id]
 		 */
 		this.sort = function(id){
-			bubbleSort(id);
+			var initime = Date.now();
+			mergeSort(id);
+			//var sorted = model.getColumn(id).getSort();
 			this.render(TbLens.getRowHeight());
+			var endtime = Date.now();
+			endtime = (endtime - initime) * 0.001;
+			console.log(endtime,"seg - sorting time");
 		}
 		/**
 		 * [BlubbleSort sorting]
@@ -643,7 +647,41 @@ var TableLens = (function(args) {
 		}
 
 		function mergeSort(id){
-			
+			var sorting;
+			var sorted = model.getColumn(id).getSort();
+			var rows = merge(self.rows);
+			self.rows = rows;
+
+			function merge(arr){
+				
+				if (arr.length < 2) return arr;
+				var mid = Math.floor(arr.length/2);
+				var arrLeft = merge(arr.slice(0,mid));
+				var arrRight = merge(arr.slice(mid));
+				
+				return sort(arrLeft,arrRight,sorted);
+			}
+
+			function sort(a,b,sorted){
+				var result = [];
+				while(a.length > 0 && b.length > 0){
+					
+					if(sorted == enumsort.asc)
+						result.push(a[0].getData()[id].getValue() < b[0].getData()[id].getValue()? a.shift() : b.shift());
+					if(sorted == enumsort.desc){
+
+						result.push(a[0].getData()[id].getValue() > b[0].getData()[id].getValue()? a.shift() : b.shift());
+					}
+				}
+				return result.concat(a.length? a:b);
+			}
+		}	
+
+		function insertSort(id){
+			var i,j,eleito;
+			/*	for (var i=1, len = self.rows.length; i < len; i++) {
+
+				}*/
 		}
 
 		var scale = document.getElementById('scale');
@@ -1098,7 +1136,7 @@ var TableLens = (function(args) {
 			
 			div.style.width =  rol.clientWidth+4+(w+1)+"px";
 			div.style.height = "auto";
-			div.style.border = "1px solid #737373";
+			// div.style.border = "1px solid #737373";
 			div.style.boxSizing = "border-box";
 
 			
@@ -1716,11 +1754,13 @@ var TableLens = (function(args) {
 		 			enumsort.none = false;
 		 			sort = enumsort.asc;
 		 		}else{
-		 			console.log(sort);
-			 		if(sort==enumsort.asc) 
+		 			
+			 		if(sort == enumsort.asc){
 			 			sort = enumsort.desc;
-			 		else 
+			 		}
+			 		else{ 
 			 			 sort = enumsort.asc;
+			 			}
 				}
 		 	}
 		 	this.getSort = function(){
