@@ -5,19 +5,32 @@
 	<link rel="stylesheet" href="normalize.css">
 	<style>
 		*{
-			-webkit-user-select: none;  /* Chrome all / Safari all */
-  -moz-user-select: none;     /* Firefox all */
-  -ms-user-select: none;      /* IE 10+ */
-  user-select: none;          /* Likely future */ 
-
+		-webkit-user-select: none;  /* Chrome all / Safari all */
+  		   -moz-user-select: none;     /* Firefox all */
+  			-ms-user-select: none;      /* IE 10+ */
+  				user-select: none;          /* Likely future */ 
 		}
 		body{
 			position: relative;
 			font: 16px sans-serif;
 		}
+		#con{
+			padding: 10px;
+		}
+		#con > div{
+			display: inline-block;
+			position: relative;
+			top:0;
+			vertical-align: top;
+			width: auto;
+		}
+		#container3{ margin-top:35px;
+		margin-left: 10px; }
 		#container, #container2{
+			
 			margin-left: 10px;
 			margin-top: 10px;
+
 		}
 		#cols{
 			margin: 0;
@@ -242,12 +255,12 @@
 </head>
 <body>
 	<div id="load" style="visibility:hidden"><span> Loading</span></div>
-	<form>
-		<input type="file" id="datainput">
-	</form>
+	
 
 	<div id="con">
-	
+		<form>
+			<input type="file" id="datainput">
+		</form>
 		<div id="container">
 			<div id="rolagem">
 				<span id="top"></span>
@@ -255,20 +268,27 @@
 				<span id="down"></span>
 			</div>	
 		</div>
-		<div id="container2">
-		</div>
-	</div>
-
-		<input type="number" id="range" min="-10" value="-1" max="10" />
-		<div id='scale'>
+		<div id="container3">
 			
 		</div>
+		
+
+		
+
+		
+	</div>
+	<div id="container2">Compress <input type="number" id="range" min="-10" value="-1" max="10" />
+	</div>
+		<!-- <div id='scale'> -->
+			
+		<!-- </div> -->
+		
 	<div id="option">
 		<fieldset>
 			  	<legend>Conjunto de dados</legend>
-				  	<input type="radio" name="db" onclick="db(1)" checked="true" /> <a> Avalição de carros </a>
-				  	<input type="radio" name="db" onclick="db(2)" /> <a > Recursos da bolsa família </a>
-				  	<input type="radio" name="db" onclick="db(3)" /> <a > Qualidade dos vinhos branco </a>
+				  	<input type="radio" name="db" onclick="db(1)" checked="true" /> <a> Avalição de carros </a><br/>
+				  	<input type="radio" name="db" onclick="db(2)" /> <a > Recursos da bolsa família </a><br/>
+				  	<input type="radio" name="db" onclick="db(3)" /> <a > Qualidade dos vinhos branco </a><br/>
 			  </fieldset>
 		<fieldset>
 		<legend>Colors standard deviation, for mean,  max value</legend>

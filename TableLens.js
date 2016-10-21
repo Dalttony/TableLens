@@ -45,8 +45,10 @@ var TableLens = (function(args) {
 	var self = this;
 	var ctx; //context 
 	var ctx2;
+	var ctx3;
 	var cvs; //canvas 
 	var canvas2 = document.createElement("canvas");
+	var canvas3 = document.createElement("canvas");
 	var ctxcache;
 	var DataRow = [];
 	var DataColumn = [];
@@ -621,11 +623,13 @@ var TableLens = (function(args) {
 		this.sort = function(id){
 			var initime = Date.now();
 			mergeSort(id);
+			this.sorting = true;
 			//var sorted = model.getColumn(id).getSort();
 			this.render(TbLens.getRowHeight());
-			var endtime = Date.now();
+			this.sorting = false;
+			/*var endtime = Date.now();
 			endtime = (endtime - initime) * 0.001;
-			console.log(endtime,"seg - sorting time");
+			console.log(endtime,"seg - sorting time");*/
 		}
 		/**
 		 * [BlubbleSort sorting]
@@ -690,7 +694,7 @@ var TableLens = (function(args) {
 				}*/
 		}
 
-		var scale = document.getElementById('scale');
+		/*var scale = document.getElementById('scale');
 		if(scale.children.length == 0){
 			for(var i=1;i<100;i++){
 				var color =	 HSIModel({hue: 3.90, sat: 1, inte:255},{hue: 3, sat: 1, inte:255},i/99);
@@ -698,7 +702,7 @@ var TableLens = (function(args) {
 				div.style.backgroundColor = " rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")";
 				scale.appendChild(div);
 			}
-		}
+		}*/
 
 	
 		/**
@@ -1084,6 +1088,7 @@ var TableLens = (function(args) {
 		
 			var div = TableLensUtil.ById(conf.container);
 			var div2 = document.getElementById("container2");
+			var div3 = document.getElementById("container3");
 			if(div.lastElementChild instanceof HTMLCanvasElement){
 				div.removeChild(div.children[1]);
 				div.removeChild(div.lastElementChild);
@@ -1160,6 +1165,12 @@ var TableLens = (function(args) {
 			canvas2.style.position = "relative";
 			canvas2.addEventListener('mousedown',canvasclick)
 			//set the context 2D 
+			canvas3.width =conf.width * 2;
+			canvas3.height = conf.height;
+			canvas3.style.display = "block";
+			canvas3.style.border = "1px dotted black";
+			canvas3.style.position = "relative";
+
 			cvs = canvas;
 			
 			cvs.onmousemove=function(evt){
@@ -1167,6 +1178,7 @@ var TableLens = (function(args) {
 			}
 			ctx = canvas.getContext("2d");
 			ctx2 = canvas2.getContext("2d");
+			ctx3 = canvas3.getContext("2d")
 			try
 			{
 				ctx.imageSmoothingEnabled = false;
@@ -1182,6 +1194,7 @@ var TableLens = (function(args) {
 			div.appendChild(divcl);
 			div.appendChild(canvas);
 			div2.appendChild(canvas2);
+			div3.appendChild(canvas3);
 			rol.style.height = div.clientHeight+"px";
 
 	}
@@ -1526,18 +1539,27 @@ var TableLens = (function(args) {
 		},
 		render:function(h){
 			mxro=0;
-			if( h > -2)	cvs.width = cvs.width;
+			if( h > -2 || this.sorting){
+				cvs.width = cvs.width;
+				canvas3.width = canvas3.width;
+			}
 				canvas2.width = canvas2.width
 			i=0
 			h=h==0||h==-1?1:h;
 			this.rowCompressed = Math.abs(h);
 			var len = this.getCountDataColumn();
 			//draw the grid
+			ctx3.lineWidth=1;
 			for (; i <len; i++) {
+				/*ctx3.moveTo(this.getDataColumn(i).offset*2, 0);
+				ctx3.lineTo(this.getDataColumn(i).offset*2, conf.height);
+				ctx3.stroke();*/
+
 				ctx.moveTo(this.getDataColumn(i).offset, 0);
 				ctx.lineTo(this.getDataColumn(i).offset, conf.height);
 				ctx.stroke();
 			}
+			if(this.sorting) this.draw(1);
 			if(h<conf.min_row_height-1) this.drawCompressed(h)
 			if(h>conf.min_row_height-1) this.draw(h);
 				document.getElementById("load").style.visibility ="hidden";
@@ -1884,7 +1906,7 @@ var TableLens = (function(args) {
 			value = value*this.getwidth()/(maxVal);//formula of table lens
 			// ctx.fillStyle=" rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")";
 			ctx.fillStyle=" rgb(0,0,255)";
-			
+		//	ctx3.fillStyle=" rgb(0,0,255)";
 			if(fisheyes){
 					var fil = id-1;
 					barra = 1
@@ -1901,7 +1923,8 @@ var TableLens = (function(args) {
 			}else{
 				//fil = h*id;
 				ctx.fillRect(this.offset,fil,value,h);
-				ctx.stroke();
+				//ctx3.fillRect(this.offset*2,fil,value,h);
+		//		ctx.stroke();
 			}
 			return value;
 		}
@@ -1935,7 +1958,8 @@ var TableLens = (function(args) {
 			var color = this.setColor(value);
 			value = value*this.getwidth()/(maxVal);//formula of table lens
 			//ctx.fillStyle="#"+color; 
-			ctx.fillStyle=" rgb(0,0,255)";
+			ctx.fillStyle="rgb(0,0,255)";
+			//ctx3.fillStyle="rgb(0,0,255)";
 			if(fisheyes){
 					var fil = id-1 ;
 					barra = 1
@@ -1955,6 +1979,8 @@ var TableLens = (function(args) {
 
 			//	fil = h*id;
 				ctx.fillRect(this.offset,fil,value,h);
+
+				//ctx3.fillRect(this.offset*2,fil,value,h);
 			}
 			return value;
 		}
