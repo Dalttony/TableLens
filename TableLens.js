@@ -80,7 +80,7 @@ var TableLens = (function(args) {
 	};
 	var conf = {
 		width: 800,
-		height: 800,
+		height: 600,
 		min_row_height: 1,
 		max_row_height: 15,
 		minwidthcol: 20,
@@ -170,6 +170,7 @@ var TableLens = (function(args) {
 	 	DataColumn =[];
 	 	DataRow = [];
 	 	linefieyes = -1;
+	 	document.getElementById("range").value = -1;
 	 	var id = (id == null) ? 1:id;
 	 	worker_db(db["_"+id]);
 	 }
@@ -1090,7 +1091,7 @@ var TableLens = (function(args) {
 		};
 
 		function initComponents(cols){
-		
+			console.log(cols)
 			var div = TableLensUtil.ById(conf.container);
 			var div2 = document.getElementById("container2");
 			var div3 = document.getElementById("container3");
@@ -1123,6 +1124,7 @@ var TableLens = (function(args) {
 			divcl.appendChild(ul);
 			//create div columns
 			var i=0;
+			var wi=0;
 			for (; i < cols.length; i++) {
 				/**text*/
 				var text = document.createTextNode(cols[i].getTitle());
@@ -1147,7 +1149,9 @@ var TableLens = (function(args) {
 				li.appendChild(text);
 				ul.appendChild(li);
 				/*Row*/
-				
+				if(cols[i] instanceof IntegerColumn || cols[i] instanceof DoubleColumn ){
+					wi+=(cols[i].getwidth()+cols[i].padding);
+				}
 			}
 			
 			div.style.width =  rol.clientWidth+4+(w+1)+"px";
@@ -1163,7 +1167,7 @@ var TableLens = (function(args) {
 			canvas.style.position = "relative";
 			canvas.addEventListener('mousedown',canvasclick)
 
-			canvas2.width =conf.width;
+			canvas2.width = conf.width;
 			canvas2.height = conf.height;
 			canvas2.style.display = "block";
 			canvas2.style.border = "1px dotted black";
@@ -1171,7 +1175,7 @@ var TableLens = (function(args) {
 			canvas2.addEventListener('mousedown',canvasclick)
 			//set the context 2D 
 			canvas3.width =conf.width * 2;
-			canvas3.height = conf.height-300;
+			canvas3.height = conf.height-200;
 			canvas3.style.display = "block";
 			canvas3.style.border = "1px dotted black";
 			canvas3.style.position = "relative";
@@ -1187,9 +1191,9 @@ var TableLens = (function(args) {
 			try
 			{
 				ctx.imageSmoothingEnabled = false;
-	    	 ctx.mozImageSmoothingEnabled = false;
-	   		  ctx.webkitImageSmoothingEnabled = false;
-	    		ctx.msImageSmoothingEnabled = false;
+	    		ctx.mozImageSmoothingEnabled = false;
+	   		 ctx.webkitImageSmoothingEnabled = false;
+	    	 ctx.msImageSmoothingEnabled = false;
 			}catch(err){
 				
 				Log.addLog(err,"e");
@@ -1557,10 +1561,13 @@ var TableLens = (function(args) {
 			//draw the grid
 			ctx3.lineWidth=1;
 			for (; i <len; i++) {
-				ctx3.moveTo(this.getDataColumn(i).offset*2, 0);
-				ctx3.lineTo(this.getDataColumn(i).offset*2, conf.height);
-				ctx3.stroke();
-
+				
+				//if(this.getDataColumn(i) instanceof IntegerColumn || this.getDataColumn(i) instanceof DoubleColumn ){
+					ctx3.strokeStyle ="black";
+					ctx3.moveTo(this.getDataColumn(i).offset*2, 0);
+					ctx3.lineTo(this.getDataColumn(i).offset*2, conf.height);
+					ctx3.stroke();
+				//}
 				ctx.moveTo(this.getDataColumn(i).offset, 0);
 				ctx.lineTo(this.getDataColumn(i).offset, conf.height);
 				ctx.stroke();
