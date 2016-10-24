@@ -363,14 +363,16 @@ window.onload = function(){
  	});
 
  	document.getElementById("top").addEventListener('mousedown',function(){
+
  		downtime = true;
  		if(Tl.start()) 
  			idinterval = setInterval(function(){
  				if(downtime){
  					Tl.rolagem(-1)
  				}
- 			},100)
+ 			},1)
  	});
+
  	document.getElementById("top").addEventListener("mouseup",function(evt){
  		downtime = false;
  		clearInterval(idinterval);
@@ -383,10 +385,10 @@ window.onload = function(){
  				if(downtime){
  					Tl.rolagem(1)
  				}
- 			},100)
+ 			},1)
  	});
  	document.getElementById("down").addEventListener("mouseup",function(evt){
- 		downtime = true;
+ 		downtime = false;
  		clearInterval(idinterval);
  	});
  	document.getElementById("range").addEventListener("input",function(){

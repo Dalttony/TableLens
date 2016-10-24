@@ -151,6 +151,7 @@ var TableLens = (function(args) {
 			http2.onload = function(){
 				db["_2"] = this.responseText;
 			}
+
 			http2.open("get","recursos.data",true)
 			http2.send();
 
@@ -165,7 +166,7 @@ var TableLens = (function(args) {
 	 * @param {File} [data] [Data uncompressed for the rendering of the TL]
 	 */
 	 this.setdb = function(id){
-	  	
+	  	mrow =0;
 	 	DataColumn =[];
 	 	DataRow = [];
 	 	linefieyes = -1;
@@ -395,7 +396,7 @@ var TableLens = (function(args) {
 
 	this.rolagem = function(acdc){
 		mrow = mrow+acdc>0? mrow+acdc:0;
-		barraRoll.roll();
+		barraRoll.roll(1);
 		TbLens.rolagem();
 	};
 
@@ -1030,7 +1031,11 @@ var TableLens = (function(args) {
 				grad2.addColorStop(1, this.color[2]);
 				ctx2.fillStyle = grad2;
 				ctx2.strokeStyle = grad2;
-				
+				console.log(avg);
+				ctx3.fillStyle = this.color[0];
+				ctx3.fillRect((column.offset*2) + (column.getwidth()+column.padding*2)*2,this.renderid,-lavg,1);
+				ctx3.fillStyle = this.color[1];
+				ctx3.fillRect((column.offset*2) ,this.renderid,vlmax,1);
 				//ctx2.fillStyle = this.color[2];
 				ctx2.fillRect(column.offset,this.renderid,vlmax,1);
 /**/			//drawing average value
@@ -1106,7 +1111,7 @@ var TableLens = (function(args) {
 			
 			/**/
 			range.max = conf.max_row_height;
-			range.min =-conf.max_row_height;
+			range.min = -30;
 			// range.value=1;
 			range.step=1;
 			// range.defaultValue = conf.max_row_height/2;
@@ -1166,7 +1171,7 @@ var TableLens = (function(args) {
 			canvas2.addEventListener('mousedown',canvasclick)
 			//set the context 2D 
 			canvas3.width =conf.width * 2;
-			canvas3.height = conf.height;
+			canvas3.height = conf.height-300;
 			canvas3.style.display = "block";
 			canvas3.style.border = "1px dotted black";
 			canvas3.style.position = "relative";
@@ -1541,8 +1546,9 @@ var TableLens = (function(args) {
 			mxro=0;
 			if( h > -2 || this.sorting){
 				cvs.width = cvs.width;
-				canvas3.width = canvas3.width;
+				
 			}
+			canvas3.width = canvas3.width;
 				canvas2.width = canvas2.width
 			i=0
 			h=h==0||h==-1?1:h;
@@ -1551,16 +1557,19 @@ var TableLens = (function(args) {
 			//draw the grid
 			ctx3.lineWidth=1;
 			for (; i <len; i++) {
-				/*ctx3.moveTo(this.getDataColumn(i).offset*2, 0);
+				ctx3.moveTo(this.getDataColumn(i).offset*2, 0);
 				ctx3.lineTo(this.getDataColumn(i).offset*2, conf.height);
-				ctx3.stroke();*/
+				ctx3.stroke();
 
 				ctx.moveTo(this.getDataColumn(i).offset, 0);
 				ctx.lineTo(this.getDataColumn(i).offset, conf.height);
 				ctx.stroke();
 			}
 			if(this.sorting) this.draw(1);
-			if(h<conf.min_row_height-1) this.drawCompressed(h)
+			if(h<conf.min_row_height-1){
+				canvas3.width = canvas3.width;
+				this.drawCompressed(h)
+			}
 			if(h>conf.min_row_height-1) this.draw(h);
 				document.getElementById("load").style.visibility ="hidden";
 						clearInterval(load);
@@ -1652,7 +1661,7 @@ var TableLens = (function(args) {
 					column = new CategoricalColumn(namecol,type);
 					break;
 				default: 
-					Log.addLog(namecol+" Type column not found"+type,"e");
+					Log.addLog(namecol+" Type column not found "+type,"e");
 					break;
 			}
 		return column;
@@ -1906,7 +1915,7 @@ var TableLens = (function(args) {
 			value = value*this.getwidth()/(maxVal);//formula of table lens
 			// ctx.fillStyle=" rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")";
 			ctx.fillStyle=" rgb(0,0,255)";
-		//	ctx3.fillStyle=" rgb(0,0,255)";
+			ctx3.fillStyle=" rgb(0,0,255)";
 			if(fisheyes){
 					var fil = id-1;
 					barra = 1
@@ -1923,7 +1932,7 @@ var TableLens = (function(args) {
 			}else{
 				//fil = h*id;
 				ctx.fillRect(this.offset,fil,value,h);
-				//ctx3.fillRect(this.offset*2,fil,value,h);
+				ctx3.fillRect(this.offset*2,fil,value,h);
 		//		ctx.stroke();
 			}
 			return value;
@@ -1959,7 +1968,7 @@ var TableLens = (function(args) {
 			value = value*this.getwidth()/(maxVal);//formula of table lens
 			//ctx.fillStyle="#"+color; 
 			ctx.fillStyle="rgb(0,0,255)";
-			//ctx3.fillStyle="rgb(0,0,255)";
+			ctx3.fillStyle="rgb(0,0,255)";
 			if(fisheyes){
 					var fil = id-1 ;
 					barra = 1
@@ -1980,7 +1989,7 @@ var TableLens = (function(args) {
 			//	fil = h*id;
 				ctx.fillRect(this.offset,fil,value,h);
 
-				//ctx3.fillRect(this.offset*2,fil,value,h);
+				ctx3.fillRect(this.offset*2,fil,value,h);
 			}
 			return value;
 		}
@@ -2118,7 +2127,6 @@ var TableLens = (function(args) {
 				var p = (idof>0)?categoryspace*idof:0;
 				fil = h*id;
 				ctx.fillRect(this.offset+p,fil,categoryspace,h);
-			
 			}
 			// span.style.width = categoryspace+"px";
 			// span.style.left = p+"%";		
@@ -2429,6 +2437,7 @@ var TableLens = (function(args) {
 	 		document.getElementById("rolagem").addEventListener("mouseup",this.mouseup,true);
 	 		document.getElementById("rolagem").addEventListener("mousemove",this.mousemove);
 	 		document.getElementById("rolagem").addEventListener("mousedown",this.mousedown);
+	 		document.getElementById("rolagem").addEventListener("mouseleave",this.mouseleave);
 	 		this.barra.style.top =this.mimtop+"px";
 			this.pos =this.mimtop;
 			this.maxbottom = this.barra.parentNode.clientHeight - this.barra.nextElementSibling.clientHeight;
@@ -2438,44 +2447,43 @@ var TableLens = (function(args) {
 			//console.log(this.maxbottom+" "+rdraw+" "+heigh);
 			this.barra.style.height = this.h+"px";
 		},
-	  down:function(){
+	  down:function(roll){
 
 	  	if(this.pos < this.maxbottom){
 	  		
-	  		this.countclick+=3;
+	  		this.countclick+=roll;
 	  		//console.log(this.countclick +" "+this.moveto);
 	  		if(this.countclick>this.moveto){
 	  			this.countclick=0;
-	  			this.pos+=3;
+	  			this.pos+=roll;
 	  			this.barra.style.top =this.pos+"px";
 	  			//console.log(this.barra.style.top);
 	  		}
 	  	}
 	  },
-	  up:function(){
+	  up:function(roll){
 	  	if(this.pos>this.mimtop){
-	  		
-	  		this.countclick+=3;
-	  		if(this.countclick==this.moveto){
+	  		this.countclick+=roll;
+	  		if(this.countclick>this.moveto){
 	  			this.countclick=0;
-	  			this.pos-=3;
+	  			this.pos-=roll;
 	  			this.barra.style.top =this.pos+"px";
 	  		}
 	  	}
 	  },
-	  roll:function(){
+	  roll:function(roll){
 	  	if(TbLens.letRoll()){
 		  	if(this.ant<mrow){
 
-		  		this.down();
+		  		this.down(roll);
 		  	}else{
-		  		this.up();
+		  		this.up(roll);
 		  	}
 		  	this.ant=mrow;
 	  	}
 	  },
 	  mousedown:function(evt){
-	 
+	 		
 	  		this.statey = evt.clientY;
 	  		this.down = true;
 	  	
@@ -2485,21 +2493,23 @@ var TableLens = (function(args) {
 	  	
 	  },
 	  mouseleave:function(evt){
-	  this.down = false;
-	 //	console.log("Sale");
+	  	this.down = false;
 	  },
 	  mousemove:function(evt){
 	  	if(this.down){
 		  	this.nstatey = evt.clientY;
 			if((this.nstatey - this.statey) > 0){
-				mrow = mrow+1>0? mrow+1:0;
-				barraRoll.roll();
-				TbLens.rolagem();
+				var roll = Math.abs(this.nstatey - this.statey);
+				mrow = mrow+roll > 0? mrow+roll:0;
+				barraRoll.roll(roll);
 			}else{
-					mrow = mrow-1>0? mrow-1:0;
-					barraRoll.roll();
-					TbLens.rolagem();
+				var roll = Math.abs(this.nstatey - this.statey);
+					mrow = mrow-roll>0? mrow-roll:0;
+					console.log(mrow);
+					barraRoll.roll(roll);
 			}
+
+			TbLens.rolagem();
 		  	this.statey = this.nstatey;
 	  	}
 	  }
