@@ -1138,10 +1138,10 @@ var TableLens = (function(args) {
 				li.type = i;
 				li.addEventListener("click", click);
 				li.addEventListener("dbclick", dbclick);
-				li.addEventListener("mousemove", mousemove);
-				li.addEventListener("mouseenter", mouseenter);
-				li.addEventListener("mousedown", mousedown);
-				li.addEventListener("mouseleave", mouseleave);
+				// li.addEventListener("mousemove", mousemove);
+				// li.addEventListener("mouseenter", mouseenter);
+				// li.addEventListener("mousedown", mousedown);
+				// li.addEventListener("mouseleave", mouseleave);
 				li.style.height = cols[i].getHeight()+"px";
 				li.style.borderLeft =  "1px solid #737373";
 				li.style.maxWidth = (cols[i].getwidth()*1.5)+"px";
