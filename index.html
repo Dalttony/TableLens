@@ -379,11 +379,13 @@ window.onload = function(){
  	});
 
  	document.getElementById("down").addEventListener('mousedown',function(){
+
  		downtime = true;
  		if(Tl.start()) 
  			idinterval = setInterval(function(){
  				if(downtime){
  					Tl.rolagem(1)
+	 					
  				}
  			},1)
  	});
