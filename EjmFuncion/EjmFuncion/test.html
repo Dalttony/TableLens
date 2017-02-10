@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>My First Web Page</h1>
+    <p>My first paragraph.</p>
+     <script type="text/javascript" src="http://code.jquery.com/jquery.js"></script>
+     <script type="text/javascript">
+ 
+      $( document ).ready(function() {
+	//alert('You have successfully defined the function!'); 
+	//$( this ).text( "resultado de la funcion ");
+	$(document.body).append('hello MArleny ');
+
+	function myFunction(a, b) {
+            return a + b;                
+        }
+
+        var x = myFunction("cielo", " 5");
+	$(document.body).append('Resultado ', x);
+      
+      
+      });
+ 
+    </script>
+</body>
+

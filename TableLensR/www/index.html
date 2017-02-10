@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="normalize.css">
+	<style>
+		*{
+		-webkit-user-select: none;  /* Chrome all / Safari all */
+  		   -moz-user-select: none;     /* Firefox all */
+  			-ms-user-select: none;      /* IE 10+ */
+  				user-select: none;          /* Likely future */ 
+		}
+		body{
+			position: relative;
+			font: 16px sans-serif;
+		}
+		#con{
+			padding: 10px;
+		}
+		#con > div{
+			display: inline-block;
+			position: relative;
+			top:0;
+			vertical-align: top;
+			width: auto;
+		}
+		#container3{ margin-top:35px;
+		margin-left: 10px; }
+		#container, #container2{
+			
+			margin-left: 10px;
+			margin-top: 10px;
+
+		}
+		#cols{
+			margin: 0;
+			padding: 0;
+		}
+		#cols > li{
+			text-decoration: none;
+			display: inline-block;
+			text-align: center;
+			white-space:nowrap; 
+			overflow:hidden;
+			text-overflow: ellipsis;
+			background-color: #EEEEEE;
+			font: 12px arial;
+			
+		}
+		#rolagem{
+			width: 25px;
+			min-height: 600px;
+			/*border:1px solid #737373;*/
+			position: relative;
+			float: right;
+			visibility: hidden;
+		}
+		#rolagem  span{
+			display: block;
+			width: 25px;
+			height: 30px;
+			position: absolute;
+			/*border: 1px solid #737373;*/
+		}
+		#rolagem span:first-child{
+			top: 0;
+		}
+		#rolagem span:last-child{
+			bottom: 0;
+			
+		}
+		#rolagem span:first-child:before{
+			content: "";
+			border-top: 5px solid transparent;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-bottom: 25px solid blue;
+			position: absolute;
+			top:-5px;
+			left: 2px;
+		}
+
+		#rolagem span:last-child:before{
+			content: "";
+			border-top: 25px solid blue;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-bottom: 5px solid transparent;
+			position: absolute;
+			top:5px;
+			left: 2px;
+		}
+		#barra{
+			display: block;
+			width: auto;
+			min-height: 10px;
+			background-color: #EEEEEE;;
+			border:1px solid #737373;
+			position: absolute;
+			padding: auto;
+			text-align: center;
+		}
+		#range{
+			margin: 4px;
+			//*visibility: hidden;*/
+		}
+
+		#scale {
+			width: 850px;
+			height: 20px;
+			position: relative;
+			margin-top: 5px;
+			margin-left: 30px;
+			display: block;
+
+		}
+		#scale > div{
+			width: 8px;
+			height: 10px;
+			display: inline-block;
+		}
+		#scale:before{
+			content: 'min';
+			display: block;
+			position: relative;
+			float: left;
+		}
+		#scale:after{
+			content: 'max';
+			
+			position: absolute;
+			right: -30px;
+		}
+		table{
+    		border-collapse: collapse;
+    		border-spacing: 0;
+    		border:0;
+    		width: auto;
+		}
+		table td{
+			padding: 0;
+			border:0;
+			margin: 0;
+		}
+
+		table tr{
+			padding: 0;
+			border:0;
+			margin: 0;
+		}
+		#TableLens, tr, td, th{
+				position: relative;
+		}
+		#table{
+			position: relative;
+			overflow: auto;
+		}
+		table span{
+			position: absolute;
+			left: 0;
+			top: 0;
+			background: red;
+			padding: 0;
+			margin: 0;
+			border: 0;
+		}
+		
+		table td{
+			margin-left: 10px;
+		}
+		fieldset{
+			background: white;
+		}
+		legend{
+			background: white;
+		}
+		fieldset > fieldset{
+			float: left;
+		}
+		fieldset span{
+			width: 40px;
+			height: 40px;
+			display: inline-block;
+		}
+		#option{
+			margin-top: 30px;
+			position: fixed;
+			right:0px;
+			top:0px;
+			width: 400px;
+			z-index: 1;
+		}
+		#load{
+			background: rgba(255,255,255,0.5);
+			justify-content: center;
+			height: 100%;
+			position: absolute;
+			text-align: center;
+			width: 100%;
+			z-index: 2;
+		}
+		#load > span{
+			border-top:10px solid yellow;
+			border-left:10px solid #FF9933;
+			border-right:10px solid blue;
+			border-bottom:10px solid red;
+			height: 60px;
+			margin-top: 200px;
+			padding: 5px;
+			position: absolute;
+			width: 60px;
+			font-weight: bold;
+			animation: 1s linear 0s infinite normal load;
+			-o-animation: 1s linear 0s infinite normal load;
+			-moz-animation: 1s linear 0s infinite  normal load;
+			-webkit-animation: 1s linear 0s infinite normal load;
+		}
+		@-webkit-keyframes load{
+
+		}
+		@-o-keyframes{
+
+		}
+		@-moz-keyframes{
+
+		}		
+		@keyframes load{
+			15%{
+				border-top:10px solid yellow;
+				border-left:10px solid #FF9933;
+				border-right:10px solid blue;
+				border-bottom:10px solid red;	
+			}
+			30%{
+				border-top:10px solid red;
+				border-left:10px solid yellow;
+				border-right:10px solid #FF9933 
+				border-bottom:10px solid blue;
+			}
+			70%{
+					border-top:10px solid blue;
+					border-left:10px solid red;
+					border-right:10px solid yellow;
+					border-bottom:10px solid  #FF9933;
+			}
+			90%{
+				border-top:10px solid #FF9933;
+				border-left:10px solid blue;
+				border-right:10px solid red ;
+				border-bottom:10px solid  yellow;
+			}
+			100%{
+				border-top:10px solid yellow;
+				border-left:10px solid #FF9933;
+				border-right:10px solid blue;
+				border-bottom:10px solid red;	
+			}
+		}
+	</style>
+	<title>Table Lens</title>
+</head>
+<body>
+	<div id="load" style="visibility:hidden"><span> Loading</span></div>
+	
+
+	<div id="con">
+		<form>
+			<input type="file" id="datainput">
+		</form>
+		<div id="container">
+			<div id="rolagem">
+				<span id="top"></span>
+				<span id="barra">--</span>
+				<span id="down"></span>
+			</div>	
+		</div>
+		<div id="container3">
+			
+		</div>
+		
+
+		
+
+		
+	</div>
+	<div id="container2">Compress <input type="number" id="range" min="-10" value="-1" max="10" />
+	</div>
+		<!-- <div id='scale'> -->
+			
+		<!-- </div> -->
+		
+	<div id="option">
+		<fieldset>
+			  	<legend>Conjunto de dados</legend>
+				  	<input type="radio" name="db" onclick="db(1)" checked="true" /> <a> Avalição de carros </a><br/>
+				  	<input type="radio" name="db" onclick="db(2)" /> <a > Recursos da bolsa família </a><br/>
+				  	<input type="radio" name="db" onclick="db(3)" /> <a > Qualidade dos vinhos branco </a><br/>
+			  </fieldset>
+		<fieldset>
+		<legend>Colors standard deviation, for mean,  max value</legend>
+			
+			  <fieldset>
+			  	<legend><input type="radio" name="x" onclick="colorchange(1)" checked="true" /> </legend>
+				  	<span style="background-color:#FF9933;"></span>
+				  	<span style="background-color:#003399;"></span>
+				  	<span style="background-color:#99CCCC;"></span>
+			  </fieldset>
+			    <fieldset>
+			  	<legend><input type="radio"  name="x"  id="color" onclick="colorchange(2)"/> </legend>
+				  	<span style="background-color:#a6cee3;"></span>
+				  	<span style="background-color:#1f78b4;"></span>
+				  	<span style="background-color:#b2df8a;"></span>
+			  </fieldset>
+			  <fieldset>
+			  	<legend><input type="radio" name="x"  id="color" onclick="colorchange(3)"/> </legend>
+			  	<span style="background-color:#003399;"></span>
+			  	<span style="background-color:#99CCCC;"></span>
+			  	<span style="background-color:#FF9933;"></span>
+			  </fieldset>
+			  <fieldset>
+			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(4)" /> </legend>
+			  	<span style="background-color:#FF9933;"></span>
+			  	<span style="background-color:#99CCCC;"></span>
+			  	<span style="background-color:#1f78b4;"></span>
+			  </fieldset>
+
+			   <fieldset>
+			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(5)" /> </legend>
+			  	<span style="background-color:#a6cee3;"></span>
+			  	<span style="background-color:#1f78b4;"></span>
+			  	<span style="background-color:#b2df8a;"></span>
+			  </fieldset>
+			   <fieldset>
+			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(6)" /> </legend>
+			  	<span style="background-color:#edf8b1;"></span>
+			  	<span style="background-color:#7fcdbb;"></span>
+			  	<span style="background-color:#2c7fb8;"></span>
+			  </fieldset>
+			</fieldset>
+	</div>
+	<div id="table">
+		<table id="TableLens">
+			
+		</table>
+	</div>
+	<div id="plot" class="shiny-plot-output" 
+         style="width: 100%; height: 400px"></div> 
+</body>
+<!--<script src="//d3js.org/ d3.v3.min.js" charset="utf-8"></script>-->
+<script src="TableLens.js"></script>
+<script src="jquery-3.1.1.min.js"></script>
+<script src="shared/json2-min.js"></script>
+<script src="shared/babel-polyfill.min.js"></script>
+<script src="shared/strftime/strftime-min.js"></script>
+<script src="shared/bootstrap/shim/respond.min.js"></script>
+<script src="shared/shiny.min.js"></script>
+
+<script>
+
+	
+var conf ={
+		width: 800,
+		height: 600,
+		minheight: 1,
+		maxheight: 10,
+		minwidthcol: 20,
+		data: 'recursos.data',
+		container: "container",
+		datainput: "datainput"
+	}
+	var Tl;
+$(document).ready(function(){
+	
+	Tl = new TableLens(conf);
+  	var downtime  = false, idinterval = 0;
+ 	document.getElementById("datainput").addEventListener('change',function(evt){
+ 		var fileInput = evt.target.files;
+ 		Tl.readData(this.files[0]);
+ 	});
+
+ 	document.getElementById("top").addEventListener('mousedown',function(){
+
+ 		downtime = true;
+ 		if(Tl.start()) 
+ 			idinterval = setInterval(function(){
+ 				if(downtime){
+ 					Tl.rolagem(-1)
+ 				}
+ 			},1)
+ 	});
+
+ 	document.getElementById("top").addEventListener("mouseup",function(evt){
+ 		downtime = false;
+ 		clearInterval(idinterval);
+ 	});
+
+ 	document.getElementById("down").addEventListener('mousedown',function(){
+
+ 		downtime = true;
+ 		if(Tl.start()) 
+ 			idinterval = setInterval(function(){
+ 				if(downtime){
+ 					Tl.rolagem(1)
+	 					
+ 				}
+ 			},1)
+ 	});
+ 	document.getElementById("down").addEventListener("mouseup",function(evt){
+ 		downtime = false;
+ 		clearInterval(idinterval);
+ 	});
+ 	document.getElementById("range").addEventListener("input",function(){
+ 		var value = parseInt(this.value);
+ 		if(Tl.start()) Tl.setRowminHeight(value);
+ 	});
+
+ 	Shiny.addCustomMessageHandler("GettingDataSilhouetteonServer", function(message){
+ 		console.log(message);
+ 	});
+ 	
+	
+});
+function colorchange(evt){
+	 Shiny.onInputChange("mydata", evt);
+			Tl.color(evt);
+		}
+
+		function db(id){
+			Tl.setdb(id);
+		}
+</script>
+
+</html>

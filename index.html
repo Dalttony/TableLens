@@ -32,13 +32,13 @@
 			margin-top: 10px;
 
 		}
-		#cols{
+		.cols{
 			margin: 0;
 			padding: 0;
 		}
-		#cols > li{
+		.cols > li{
 			text-decoration: none;
-			display: inline-block;
+			display:table-cell;
 			text-align: center;
 			white-space:nowrap; 
 			overflow:hidden;
@@ -254,14 +254,14 @@
 	<title>Table Lens</title>
 </head>
 <body>
-	<div id="load" style="visibility:hidden"><span> Loading</span></div>
+	<div id="load" ><span> Loading</span></div>
 	
 
 	<div id="con">
 		<form>
 			<input type="file" id="datainput">
 		</form>
-		<div id="container">
+		<div id="container" >
 			<div id="rolagem">
 				<span id="top"></span>
 				<span id="barra">--</span>
@@ -277,7 +277,7 @@
 
 		
 	</div>
-	<div id="container2">Compress <input type="number" id="range" min="-10" value="-1" max="10" />
+		<div id="container2">Compress <input type="number" id="range" min="-10" value="-1" max="10" />
 	</div>
 		<!-- <div id='scale'> -->
 			
@@ -287,11 +287,17 @@
 		<fieldset>
 			  	<legend>Conjunto de dados</legend>
 				  	<input type="radio" name="db" onclick="db(1)" checked="true" /> <a> Avalição de carros </a><br/>
-				  	<input type="radio" name="db" onclick="db(2)" /> <a > Recursos da bolsa família </a><br/>
+				  	<input type="radio" name="db" onclick="db(2)" /> <a > Iris data base </a><br/>
 				  	<input type="radio" name="db" onclick="db(3)" /> <a > Qualidade dos vinhos branco </a><br/>
-			  </fieldset>
+		</fieldset>
 		<fieldset>
-		<legend>Colors standard deviation, for mean,  max value</legend>
+			<legend>Group</legend>
+				<input type="radio" name="group" onclick="group('3')" checked="true" /> <a>3</a>
+				<input type="radio" name="group" onclick="group('7')" /> <a > 7 </a>
+				<input type="radio" name="group" onclick="group('nsquare')" /> <a >Square root</a><br/>
+		</fieldset>
+		<fieldset>
+			<legend>Colors standard deviation, for mean,  max value</legend>
 			
 			  <fieldset>
 			  	<legend><input type="radio" name="x" onclick="colorchange(1)" checked="true" /> </legend>
@@ -339,6 +345,7 @@
 	</div>
 </body>
 <!--<script src="//d3js.org/ d3.v3.min.js" charset="utf-8"></script>-->
+<script src="js/TableLensJS/ReaderDataServer.js"></script>
 <script src="TableLens.js"></script>
 <script>
 
@@ -399,12 +406,17 @@ window.onload = function(){
  	});
  	
 }
-function colorchange(evt){
+	function colorchange(evt){
 		Tl.color(evt);
 	}
 
 	function db(id){
-		Tl.setdb(id);
+		Tl.setDataBase(id);
+	}
+
+	function group(type){
+		
+		Tl.changeGroup(type);
 	}
 </script>
 </html>

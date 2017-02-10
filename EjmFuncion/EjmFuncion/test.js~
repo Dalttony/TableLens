@@ -1,0 +1,12 @@
+$( document ).ready(function() {
+ 
+     function myFunction(a, b) {
+      return a + b;                
+     }
+     
+     document.getElementById("action").onclick = function() {
+        var x = myFunction("cielo", " 5");
+        Shiny.onInputChange("mydata", x);
+    };
+ 
+});

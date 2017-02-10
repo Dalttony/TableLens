@@ -79,7 +79,7 @@ var TableLens = (function(args) {
 		_2:""
 	};
 	var conf = {
-		width: 800,
+		width: 1200,
 		height: 600,
 		min_row_height: 1,
 		max_row_height: 15,
@@ -103,7 +103,8 @@ var TableLens = (function(args) {
 	//Verify data args withc conf
 	var sort=false;
 
-	
+	var defaultPathfFolder = "cls3";
+	var defaultDataBase = "car";
 	//----------------------	
 
 	var TypeColumn= {
@@ -119,9 +120,65 @@ var TableLens = (function(args) {
 
 	};
 
+	var silhoutte_data_name ={
+		car:'sil_ins_car_r.data',
+		iris:'sil_ins_iris.data',
+		wine:'sil_ins_winequality-white_r.data',
+	};
+
+	var cluster_data_name = {
+		car:'cls_car_r.data',
+		iris:'cls_iris_r.data',
+		wine:'cls_winequality-white_r.data',
+	};
+
+	var folder_path_relative= {
+		cls7:'../../TableLensR/www/data/cls7/',
+		cls3:'../../TableLensR/www/data/cls3/',
+		clsnsquare:'../../TableLensR/www/data/nsquare/',
+	};
+
+	var folder_path_absolute= {
+		cls7:'TableLensR/www/data/cls7/',
+		cls3:'TableLensR/www/data/cls3/',
+		clsnsquare:'TableLensR/www/data/nsquare/',
+	};
+
+	var data_silhoutte = [];
+
+	var defaultSilhoutte = 0;
+	var quantityoFShilhoutte = 0;
+	function gettingDataServer(){
+		
+				
+		for(var key in folder_path){
+			console.log(key);
+		}
+		for (var i = 0; i < 5000; i++) {
+			console.log(i);
+		}
+		var loading = document.getElementById("load");
+		loading.firstChild.innerText="Loading";
+		loading.style.visibility = "visible";
+	}
+
+	function gettingSilhoutte(strData){
+		var indata = strData.split("\n");
+		var nameCols = indata[0].split(dl);
+
+
+	}
+
+	function tranformingData(){
+
+	}
+
+	function renderingView(){
+
+	}
 	//laoding the data
 	
-	function getXMLHttpRequest() 
+		function getXMLHttpRequest() 
 		{
 		    if (window.XMLHttpRequest) {
 		        return new window.XMLHttpRequest;
@@ -136,36 +193,103 @@ var TableLens = (function(args) {
 		    }
 		}
 
-			var http1 = getXMLHttpRequest();
+			
+	/**
+	 * @param {File} [data] [Data uncompressed for the rendering of the TL]
+	 */
+	function reciverSilhoutte(e){
+		data_silhoutte.push(e.data.dataSilhoutte);
+		quantityoFShilhoutte ++;
+		if (quantityoFShilhoutte == 3){
+			var http1 = getXMLHttpRequest();	
 			http1.onload = function(){
 				db["_1"] = this.responseText;
 			};
 			http1.onloadend = function(){
-				self.setdb();
+				//self.pipeline();
+				if(defaultDataBase ==  "car")	self.setdb();
 				//self.readData();
 			};
-			http1.open("get","test.data",true)
+			http1.open("get",folder_path_absolute[defaultPathfFolder]+cluster_data_name[defaultDataBase],true)
 			http1.send();
 
 			var http2 = getXMLHttpRequest();
 			http2.onload = function(){
 				db["_2"] = this.responseText;
+				if(defaultDataBase ==  "iris") 
+					self.setdb(2);
 			}
 
-			http2.open("get","recursos.data",true)
+			http2.open("get",folder_path_absolute[defaultPathfFolder]+cluster_data_name[defaultDataBase],true)
 			http2.send();
 
 			var http3 = getXMLHttpRequest();
 			http3.onload = function(){
-				
 				db["_3"] = this.responseText;
+				if(defaultDataBase ==  "wine") 
+					self.setdb(3);
 			};
-			http3.open("get","winequality-white.data",true)
+			
+			http3.open("get",folder_path_absolute[defaultPathfFolder]+cluster_data_name[defaultDataBase],true)
+			//http3.open("get","cls_winequality-white.data",true)
 			http3.send();
-	/**
-	 * @param {File} [data] [Data uncompressed for the rendering of the TL]
-	 */
-	 this.setdb = function(id){
+			quantityoFShilhoutte=0;
+		}
+
+	}
+	var pipeline = function(){
+		var self = this;
+		for(var str in folder_path_relative){
+			console.log(folder_path_relative[str]+silhoutte_data_name[defaultDataBase]);
+			var wk = new Worker("js/TableLensJS/ReaderDataSilhoutte.js");
+			wk.postMessage({delimiter:dl,dataPath:folder_path_relative[str]+silhoutte_data_name[defaultDataBase]});
+			wk.onmessage = reciverSilhoutte;
+		}
+		var pip = new Promise(function(resolve, reject){
+		
+		});
+	};
+
+
+	pipeline();
+
+	this.changeGroup =  function(type){
+		switch(type){
+			case "3":
+				defaultPathfFolder = "cls3";
+				defaultSilhoutte =0;
+				break;
+			case "7":
+				defaultSilhoutte = 1;
+				defaultPathfFolder = "cls7";
+				break;
+			case "nsquare":
+				defaultSilhoutte = 2
+				defaultPathfFolder = "clsnsquare";
+				break;
+		}
+		//console.log(quantityoFShilhoutte);
+		pipeline();
+	};
+
+	this.setDataBase = function(db){
+		switch(db){
+			case 1:
+				defaultDataBase = "car";
+				break;
+			case 2:
+				defaultDataBase = "iris";
+				break;
+			case 2:
+				defaultDataBase = "wine";
+				break;
+		}
+		pipeline();
+	};
+
+
+	this.setdb = function(id){
+
 	  	mrow =0;
 	 	DataColumn =[];
 	 	DataRow = [];
@@ -173,7 +297,7 @@ var TableLens = (function(args) {
 	 	document.getElementById("range").value = -1;
 	 	var id = (id == null) ? 1:id;
 	 	worker_db(db["_"+id]);
-	 }
+	 };
 
 
 	this.readData = function(data){
@@ -244,10 +368,17 @@ var TableLens = (function(args) {
 		}	
 	}
 
+	function worker_db_slihoute(str){
+
+	}
+
 	function worker_db(str){
 		
 			load = setInterval(function(){
-				document.getElementById("load").style.visibility = "visible";
+				var loading = document.getElementById("load");
+				loading.firstChild.innerText="Loading DataBase";
+				loading.style.visibility = "visible";
+				
 			},1);
 	  	
 	  	
@@ -266,13 +397,13 @@ var TableLens = (function(args) {
 				var model = new TableModel(DataColumn);
 			if(window.Worker){
 					
-					var w = new Worker("reader.js");
-					var w1 = new Worker("reader.js");
-					var w2 = new Worker("reader.js");
+					var w = new Worker("reader1.js");
+					var w1 = new Worker("reader1.js");
+					var w2 = new Worker("reader1.js");
 					var workers = [];
 					var div = Math.round((indata.length-2)/3);
 					var d1 = indata.slice(2,div), d2 = indata.slice(div+1,div*2),d3 = indata.slice(div*2+1);
-					w.postMessage({data:d1,col_len:DataColumn.length});
+					w.postMessage({data:indata.slice(2),col_len:DataColumn.length,init:0,end:div});
 					var end=0;
 					var dtv = [],dtv1 = [],dtv2 = [];
 					var id =0;
@@ -287,7 +418,7 @@ var TableLens = (function(args) {
 				  					id++;
 				  					for(var c =0; c< e.data.data.length;c++){
 				  						
-				  						var dv = new DataValue(id, DataColumn[c], e.data.data[c]);
+				  						var dv = new DataValue(e.data.id, DataColumn[c], e.data.data[c]);
 				  						DataColumn[c].addDataValue(dv);
 				  						dtv.push(dv);
 				  					}
@@ -307,7 +438,7 @@ var TableLens = (function(args) {
 				  				}
 				  		}
 				 	};
-				 	w1.postMessage({data:d2,col_len:DataColumn.length});
+				 	w1.postMessage({data:indata.slice(2),col_len:DataColumn.length,init:div+1,end:div*2});
 				 	w1.onmessage = function(e){
 				  		switch (e.data.obj){
 				  			case 1://case column
@@ -316,7 +447,8 @@ var TableLens = (function(args) {
 				  			case 2: //case Row
 				  					id++;
 				  					for(var c =0; c< e.data.data.length;c++){
-				  						var dv = new DataValue(id, DataColumn[c], e.data.data[c]);
+				  					//	var dv = new DataValue(id, DataColumn[c], e.data.data[c]);
+				  						var dv = new DataValue(e.data.id, DataColumn[c], e.data.data[c]);
 				  						DataColumn[c].addDataValue(dv);
 				  						dtv1.push(dv);
 				  					}
@@ -336,7 +468,7 @@ var TableLens = (function(args) {
 				  				}
 				  		}
 				 	};
-			 w2.postMessage({data:d3,col_len:DataColumn.length});
+			 w2.postMessage({data:indata.slice(2),col_len:DataColumn.length,init:div*2+1,end:indata.length-2});
 				 	w2.onmessage = function(e){
 				  		switch (e.data.obj){
 				  			case 1://case column
@@ -345,7 +477,7 @@ var TableLens = (function(args) {
 				  			case 2: //case Row
 				  					id++;
 				  					for(var c =0; c< e.data.data.length;c++){
-				  						var dv = new DataValue(id, DataColumn[c], e.data.data[c]);
+				  						var dv = new DataValue(e.data.id, DataColumn[c], e.data.data[c]);
 				  						DataColumn[c].addDataValue(dv);
 				  						dtv2.push(dv);
 				  					}
@@ -432,7 +564,6 @@ var TableLens = (function(args) {
 		var model = model;
 		var rows = rows;
 		var rowHeight=-1;
-		
 
 		//set up column of table
 		//viewModel = new TableLensView(model);
@@ -597,7 +728,6 @@ var TableLens = (function(args) {
 
 		this.colorDrawed = function(id){
 			this.color = _color["_"+id];
-			console.log(-this.rowCompressed);
 			this.render(-this.rowCompressed);
 		}
 		this.fishEyes = function(irow){
@@ -736,7 +866,8 @@ var TableLens = (function(args) {
 			var dst=0;//standard deviation
 			var max=0,min=Number.MAX_VALUE,mid=0;
 			var vlsum=0;
-			var column = data[0].getColumn();
+			var column = data[data.length-1].getColumn();
+
 			op = (op<0.25)?0.25:op;
 			var fisheyes = 0;
 			for (; i < len; i++) {
@@ -774,47 +905,48 @@ var TableLens = (function(args) {
 					}
 				}
 			}
+
 			if(column instanceof IntegerColumn || column instanceof DoubleColumn ){
-			if(linefieyes > -1){
-				
-				if(id < linefieyes){
-					ctx2.filter = "blur(1px)"; 
-				}
-				if(id > linefieyes + conf.max_row_height * data.length){
-					ctx2.filter = "blur(1px)";
-				}
-				if(id == linefieyes){
-					
-					ctx2.restore();
-					ctx2.save();
-					//ctx2.shadowColor = "white";
-					ctx2.shadowBlur  = 5;
-					ctx2.strokeStyle = "white";
-					ctx2.fillStyle="white";
-					i=0;
-					var pos = this.renderid;
-					var squares = Math.floor(column.getwidth()/data.length);
-						/**
-						 * [Made the Histograma when is able the fisheyes interaction]
-						 * @param  {[type]} ;i<data.length;i++ [description]
-						 * @return {[type]}                    [description]
-						 */
-					for(;i<data.length;i++){
-						var h = (data[i].getValue() * (conf.max_row_height-3) * data.length)/data[pmax].getValue();
-						var py = Math.abs(((conf.max_row_height-3) * data.length) - h);
-						ctx2.fillStyle = this.color[1];
-						ctx2.fillRect(column.offset+(i*squares)+3,linefieyes + py+column.padding,squares-3,h);
-						ctx2.fillStyle	= "white";
-						var text = ctx2.measureText(data[i].getValue().toString().trim());
-						ctx2.fillText(data[i].getValue().toString().trim(),column.offset+(i*squares)+Math.floor(squares/2)-Math.floor(text.width/2),linefieyes + py+column.padding + h-2,squares-2);
-						//ctx2.rect(column.offset,this.renderid,column.getwidth()+column.padding,conf.max_row_height);
-						this.renderid+=conf.max_row_height;
+					if(linefieyes > -1){
+						
+						if(id < linefieyes){
+							ctx2.filter = "blur(1px)"; 
+						}
+						if(id > linefieyes + conf.max_row_height * data.length){
+							ctx2.filter = "blur(1px)";
+						}
+						if(id == linefieyes){
+							
+							ctx2.restore();
+							ctx2.save();
+							//ctx2.shadowColor = "white";
+							ctx2.shadowBlur  = 5;
+							ctx2.strokeStyle = "white";
+							ctx2.fillStyle="white";
+							i=0;
+							var pos = this.renderid;
+							var squares = Math.floor(column.getwidth()/data.length);
+								/**
+								 * [Made the Histograma when is able the fisheyes interaction]
+								 * @param  {[type]} ;i<data.length;i++ [description]
+								 * @return {[type]}                    [description]
+								 */
+							for(;i<data.length;i++){
+								var h = (data[i].getValue() * (conf.max_row_height-3) * data.length)/data[pmax].getValue();
+								var py = Math.abs(((conf.max_row_height-3) * data.length) - h);
+								ctx2.fillStyle = this.color[1];
+								ctx2.fillRect(column.offset+(i*squares)+3,linefieyes + py+column.padding,squares-3,h);
+								ctx2.fillStyle	= "white";
+								var text = ctx2.measureText(data[i].getValue().toString().trim());
+								ctx2.fillText(data[i].getValue().toString().trim(),column.offset+(i*squares)+Math.floor(squares/2)-Math.floor(text.width/2),linefieyes + py+column.padding + h-2,squares-2);
+								//ctx2.rect(column.offset,this.renderid,column.getwidth()+column.padding,conf.max_row_height);
+								this.renderid+=conf.max_row_height;
+
+							}
+							ctx2.fill();
+						}
 
 					}
-					ctx2.fill();
-				}
-
-			}
 			}
 
 			
@@ -823,12 +955,7 @@ var TableLens = (function(args) {
 			
 			//if(id > fisheyes+){ ctx.save(); ctx.filter = "blur(1px)";}
 			//draw the value for
-			if(column instanceof CategoricalColumn || column instanceof StringColumn){
-				var c = Math.floor(Math.random() * data.length) - 1;
-				c=c<0?0:c;
-				
-				//column.draw(data[c].getValue(),id,1);
-			}
+			
 			
 			//draw the value for 
 			if(column instanceof IntegerColumn || column instanceof DoubleColumn ){
@@ -1038,11 +1165,24 @@ var TableLens = (function(args) {
 				grad2.addColorStop(diff, this.color[1] );
 				grad2.addColorStop(lavggrad, this.color[1] );
 				grad2.addColorStop(1, this.color[2] );
-				
-
-
+			
 				ctx2.fillStyle = this.color[2];
-				ctx2.fillRect((column.offset*2) + (column.getwidth()+column.padding*2)*2,this.renderid,-lavg,1);
+				//ctx2.fillRect((column.offset*2) + (column.getwidth()+column.padding*2)*2,this.renderid,-lavg,1);
+				
+				
+				dsil = parseFloat(data_silhoutte[defaultSilhoutte][data[0].getIndexOut()][column.getIndex()])
+				diff = ((column.offset*2) + (column.getwidth()*2)) - ((column.offset*2) + (column.getwidth()*1.5))-5;
+				dsil_perce = Math.abs(dsil) / 1;
+				dsil_value = diff * dsil_perce;
+				if(dsil >=0){
+					if(dsil==0)
+						dsil_value =1;
+					//calculate the distance of a column that silhouette coefficient must takes in percentage
+					ctx2.fillRect((column.offset*2) + (column.getwidth()*1.5-column.padding),this.renderid,dsil_value,1);	
+				}else{
+					ctx2.fillStyle = this.color[1];
+					ctx2.fillRect((column.offset*2) + (column.getwidth()*1.5-column.padding),this.renderid,-dsil_value,1);		
+				}
 
 				ctx2.fillStyle = grad2;
 				//ctx2.strokeStyle = grad2;
@@ -1055,27 +1195,46 @@ var TableLens = (function(args) {
 				//ctx2.fillRect(column.offset,id,lavg,1);
 				ctx2.lineWidth = 1;
 				ctx.restore();
-			}
-		};
+				
+				}
 
+
+				if(column instanceof CategoricalColumn || column instanceof StringColumn){
+
+					var c = Math.floor(Math.random() * data.length) - 1;
+					c=c<0?0:c;
+					var dtcat = column.getDataCompress();
+					var categoryColumnSpace = Math.ceil((column.getwidth()*2+column.padding)/dtcat.length);
+					var idof = dtcat.indexOf(data[c].getValue());
+					var p = (idof>0)?categoryColumnSpace*idof:0;
+					fil = h*id;
+					ctx2.fillStyle = column.getColor(data[c].getValue());
+					ctx2.fillRect(column.offset * 2+p,this.renderid,categoryColumnSpace,1);
+				}
+		};
+		//initialize components as column and roll bar
 		function initComponents(cols){
-			var div = TableLensUtil.ById(conf.container);
+			var div = TableLensUtil.ById(conf.container);//div for rol bar
 			var div2 = document.getElementById("container2");
 			var div3 = document.getElementById("container3");
+
 			if(div.lastElementChild instanceof HTMLCanvasElement){
 				div.removeChild(div.children[1]);
 				div.removeChild(div.lastElementChild);
+			}
+
+			if(div2.lastElementChild instanceof HTMLCanvasElement){
+				div2.removeChild(div2.children[1]);
+				div2.removeChild(div2.lastElementChild);
 			}
 			var w = conf.width + 1, h=conf.height + 1; //width of canvas
 			
 			var divcl = TableLensUtil.createElement("div");
 			var ul = TableLensUtil.createElement("ul");
-			var rol= TableLensUtil.ById("rolagem");
+			
+			var rol = TableLensUtil.ById("rolagem");
 			var range = TableLensUtil.ById("range");
 			/***Render Table */
-			
-			
-
 			
 			/**/
 			range.max = conf.max_row_height;
@@ -1085,17 +1244,15 @@ var TableLens = (function(args) {
 			// range.defaultValue = conf.max_row_height/2;
 			//console.log(Object.create(range));
 			rol.style.visibility ="visible";
-			divcl.style.width= w+"px";
-			divcl.style.height ="auto";
-			ul.setAttribute("id","cols");
-			divcl.appendChild(ul);
+			
+			ul.className = "cols";
+			var ul2 = ul.cloneNode(true);
 			//create div columns
 			var i=0;
 			var wi=0;
 			for (; i < cols.length; i++) {
 				/**text*/
 				var text = document.createTextNode(cols[i].getTitle());
-				
 				var li = TableLensUtil.createElement("li")
 				li.style.padding = cols[i].padding+"px";
 				li.style.width = cols[i].getwidth()+"px";
@@ -1114,13 +1271,31 @@ var TableLens = (function(args) {
 				li.style.maxWidth = (cols[i].getwidth()*1.5)+"px";
 				li.style.minWidth = (cols[i].getwidth()/1.5)+"px";
 				li.appendChild(text);
+
+				var l2 = li.cloneNode(true);
+				l2.style.padding = 2 * cols[i].padding+"px";
+				l2.addEventListener("click", click);
+				l2.addEventListener("dbclick", dbclick);
+				li.setAttribute("id","col2"+i);
+				l2.style.maxWidth =  (2 * cols[i].getwidth())+"px";
+				l2.style.minWidth =  ( 2 * cols[i].getwidth()/1.5)+"px";
+				l2.style.width = 2 * cols[i].getwidth()+"px";
+				ul2.appendChild(l2);
 				ul.appendChild(li);
 				/*Row*/
 				if(cols[i] instanceof IntegerColumn || cols[i] instanceof DoubleColumn ){
 					wi+=(cols[i].getwidth()+cols[i].padding);
 				}
 			}
-			
+			divcl.style.width= w+"px";
+			divcl.style.height ="auto";
+			var divcl2 = divcl.cloneNode(false);
+			divcl2.style.width= 2*w+"px";
+			divcl2.style.height ="auto";
+
+			divcl2.appendChild(ul2);
+			divcl.appendChild(ul);
+
 			div.style.width =  rol.clientWidth+4+(w+1)+"px";
 			div.style.height = "auto";
 			// div.style.border = "1px solid #737373";
@@ -1159,8 +1334,8 @@ var TableLens = (function(args) {
 			{
 				ctx.imageSmoothingEnabled = false;
 	    		ctx.mozImageSmoothingEnabled = false;
-	   		 ctx.webkitImageSmoothingEnabled = false;
-	    	 ctx.msImageSmoothingEnabled = false;
+	   		 	ctx.webkitImageSmoothingEnabled = false;
+	    	 	ctx.msImageSmoothingEnabled = false;
 			}catch(err){
 				
 				Log.addLog(err,"e");
@@ -1169,6 +1344,7 @@ var TableLens = (function(args) {
 			//add element to main component [menu and canvas]
 			div.appendChild(divcl);
 			div.appendChild(canvas);
+			div2.appendChild(divcl2);
 			div2.appendChild(canvas2);
 			// div3.appendChild(canvas3);
 			rol.style.height = div.clientHeight+"px";
@@ -1194,6 +1370,7 @@ var TableLens = (function(args) {
 		var t=0;
 		var resize = false;
 		var offsetX =0;
+
 		function click(evt){
 			if(!resize){
 				cwidth=false;
@@ -1540,7 +1717,7 @@ var TableLens = (function(args) {
 				ctx.stroke();
 			}
 			if(this.sorting) this.draw(1);
-			if(h<conf.min_row_height-1){
+			if(h<=conf.min_row_height){
 				canvas3.width = canvas3.width;
 				this.drawCompressed(h)
 			}
@@ -2022,7 +2199,6 @@ var TableLens = (function(args) {
 			this.drawCompress = function(data){
 				var c = Math.floor(Math.random() * data.length) - 1;
 				c=c<0?0:c;
-				console.log(data[c].getValue().trim());
 		}
 
 
@@ -2035,6 +2211,7 @@ var TableLens = (function(args) {
 			Column.call(this,name,type);
 			var category=new Object();
 			var dtcat = [];
+			var value;
 			var colors = ["rgb(255, 0, 0)",
 						"rgb(0, 255, 0)",
 						"rgb(128, 128, 128)",
@@ -2070,8 +2247,6 @@ var TableLens = (function(args) {
 						category[data.toString().trim()]=color[0];
 						var c=data.toString().trim();
 						dtcat.push(data.toString().trim());
-						
-
 					}
 				return	data.toString().trim();
 			};
@@ -2105,13 +2280,21 @@ var TableLens = (function(args) {
 			// span.style.width = categoryspace+"px";
 			// span.style.left = p+"%";		
 		};
+
+		this.getDataCompress = function(row){
+			return dtcat;
+		};
+
+		this.getColor = function(group){
+			return category[group];
+		};
+
 		this.getMinValue = function(){
 				return "Categorica Column";
 		};
 		this.drawCompress = function(data,id){
 				var c = Math.floor(Math.random() * data.length) - 1;
 				c=c<0?0:c;
-				
 				console.log(category[data[c].getValue()]);
 		}
 
@@ -2168,6 +2351,7 @@ var TableLens = (function(args) {
 	var DataValue = function(id, column, value){
 
 		var id = id;
+		var sid = id;
 		var r = id;
 		var column = column;
 		var padding = 10;
@@ -2223,16 +2407,21 @@ var TableLens = (function(args) {
 		};
 		this.setId = function(row){
 			id = row;
+
 		};
 		this.feyes =function	(value){
 				feyes = value;
 		};
 		this.getIdr = function(){
 			return r;
-		}
+		};
 		this.getFeyes = function	(){
 			return feyes;
-		}
+		};
+
+		this.getIndexOut = function(){
+			return sid;
+		};
 
 		this.drawCompressed = function(data,id){
 			var i = 0;
@@ -2422,7 +2611,7 @@ var TableLens = (function(args) {
 			this.moveto = Math.round(maxrow/rdraw);
 			this.h = (rdraw * heigh) / this.row;
 
-			console.log(maxrow,rdraw,this.moveto);
+			//console.log(maxrow,rdraw,this.moveto);
 			//console.log(this.maxbottom+" "+rdraw+" "+heigh);
 			this.barra.style.height = this.h+"px";
 		},

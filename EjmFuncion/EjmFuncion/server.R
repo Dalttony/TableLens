@@ -1,0 +1,26 @@
+library(shiny)
+
+shinyServer(function(input, output, session) {
+
+  output$plot1 <- renderPlot({
+    m <- matrix(c(1:20),nrow = 10, ncol=2)
+    plot(m,pch = 16, cex = 3, col = "green")
+
+  })
+  
+  observeEvent(input$actionEnvio, {
+#     session$sendCustomMessage(type='myCallbackHandler', input$text)
+    session$sendCustomMessage(type='myCallbackHandler', message = list(input$text, input$text1))
+  })
+  
+#   output$Resultado <- renderPrint(input$mydata)
+  
+  observeEvent(input$action, {
+    print( "chusca" )
+    
+    print( input$mydata )
+    output$Resultado <- renderPrint(input$mydata)
+  })
+  
+})
+
