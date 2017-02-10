@@ -234,11 +234,12 @@ var TableLens = (function(args) {
 			//http3.open("get","cls_winequality-white.data",true)
 			http3.send();
 			quantityoFShilhoutte=0;
+			console.log(data_silhoutte[0].length,data_silhoutte[1].length,data_silhoutte[2].length)
 		}
-
 	}
 	var pipeline = function(){
 		var self = this;
+
 		for(var str in folder_path_relative){
 			console.log(folder_path_relative[str]+silhoutte_data_name[defaultDataBase]);
 			var wk = new Worker("js/TableLensJS/ReaderDataSilhoutte.js");
@@ -254,6 +255,7 @@ var TableLens = (function(args) {
 	pipeline();
 
 	this.changeGroup =  function(type){
+		data_silhoutte=[];
 		switch(type){
 			case "3":
 				defaultPathfFolder = "cls3";
@@ -268,11 +270,11 @@ var TableLens = (function(args) {
 				defaultPathfFolder = "clsnsquare";
 				break;
 		}
-		//console.log(quantityoFShilhoutte);
 		pipeline();
 	};
 
 	this.setDataBase = function(db){
+		data_silhoutte=[];
 		switch(db){
 			case 1:
 				defaultDataBase = "car";
@@ -280,7 +282,7 @@ var TableLens = (function(args) {
 			case 2:
 				defaultDataBase = "iris";
 				break;
-			case 2:
+			case 3:
 				defaultDataBase = "wine";
 				break;
 		}
@@ -1168,8 +1170,6 @@ var TableLens = (function(args) {
 			
 				ctx2.fillStyle = this.color[2];
 				//ctx2.fillRect((column.offset*2) + (column.getwidth()+column.padding*2)*2,this.renderid,-lavg,1);
-				
-				
 				dsil = parseFloat(data_silhoutte[defaultSilhoutte][data[0].getIndexOut()][column.getIndex()])
 				diff = ((column.offset*2) + (column.getwidth()*2)) - ((column.offset*2) + (column.getwidth()*1.5))-5;
 				dsil_perce = Math.abs(dsil) / 1;
