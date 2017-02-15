@@ -182,8 +182,29 @@
 			right:0px;
 			top:0px;
 			width: 400px;
-			z-index: 1;
+			
 		}
+
+		#sort{
+			background-color: #EEEEEE;
+			position: absolute;
+			z-index: 1;
+			border:2px dotted black;
+		}
+		#sort ul{
+			padding: 0;
+		}
+		#sort ul li{
+			padding: 5px;
+			list-style: none;
+			text-decoration: none;
+			text-align: justify;
+			white-space:nowrap;
+			overflow:hidden;
+    		text-overflow:clip ellipsis;
+
+		}
+
 		#load{
 			background: rgba(255,255,255,0.5);
 			justify-content: center;
@@ -255,7 +276,7 @@
 </head>
 <body>
 	<div id="load" ><span> Loading</span></div>
-	
+
 
 	<div id="con">
 		<form>
@@ -285,7 +306,12 @@
 		
 	<div id="option">
 		<fieldset>
-			  	<legend>Conjunto de dados</legend>
+			  	<legend>Order Type by</legend>
+				  	<input type="radio" name="ordertype" onclick="changeOrderType(1)" checked="true" /> <a> Column Data </a>
+				  	<input type="radio" name="ordertype" onclick="changeOrderType(2)" /> <a > Silhouette Data </a>
+		</fieldset>
+		<fieldset>
+			  	<legend>Database</legend>
 				  	<input type="radio" name="db" onclick="db(1)" checked="true" /> <a> Avalição de carros </a><br/>
 				  	<input type="radio" name="db" onclick="db(2)" /> <a > Iris data base </a><br/>
 				  	<input type="radio" name="db" onclick="db(3)" /> <a > Qualidade dos vinhos branco </a><br/>
@@ -304,24 +330,32 @@
 				  	<span style="background-color:#FF9933;"></span>
 				  	<span style="background-color:#003399;"></span>
 				  	<span style="background-color:#99CCCC;"></span>
+				  	<p> - </p>
+				  		<span style="background-color:#b2df8a;"></span>
+				  		<span style="background-color:#a6cee3;"></span>
 			  </fieldset>
 			    <fieldset>
 			  	<legend><input type="radio"  name="x"  id="color" onclick="colorchange(2)"/> </legend>
 				  	<span style="background-color:#a6cee3;"></span>
-				  	<span style="background-color:#1f78b4;"></span>
+				  	<span style="background-color:#edf8b1;"></span>
 				  	<span style="background-color:#b2df8a;"></span>
+				  	<p> - </p>
+				  	<span style="background-color:#FF9933;"></span>
+				  		<span style="background-color:#1f78b4;"></span>
 			  </fieldset>
-			  <fieldset>
+			  <!--fieldset>
 			  	<legend><input type="radio" name="x"  id="color" onclick="colorchange(3)"/> </legend>
 			  	<span style="background-color:#003399;"></span>
 			  	<span style="background-color:#99CCCC;"></span>
 			  	<span style="background-color:#FF9933;"></span>
+			  	<p> - </p>
 			  </fieldset>
 			  <fieldset>
 			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(4)" /> </legend>
 			  	<span style="background-color:#FF9933;"></span>
 			  	<span style="background-color:#99CCCC;"></span>
 			  	<span style="background-color:#1f78b4;"></span>
+			  	<p> - </p>
 			  </fieldset>
 
 			   <fieldset>
@@ -329,13 +363,15 @@
 			  	<span style="background-color:#a6cee3;"></span>
 			  	<span style="background-color:#1f78b4;"></span>
 			  	<span style="background-color:#b2df8a;"></span>
+			  	<p> - </p>
 			  </fieldset>
 			   <fieldset>
 			  	<legend><input type="radio"  name="x" id="color"  onclick="colorchange(6)" /> </legend>
 			  	<span style="background-color:#edf8b1;"></span>
 			  	<span style="background-color:#7fcdbb;"></span>
 			  	<span style="background-color:#2c7fb8;"></span>
-			  </fieldset>
+			  	<p> - </p>
+			  </fieldset-->
 			</fieldset>
 	</div>
 	<div id="table">
@@ -417,6 +453,10 @@ window.onload = function(){
 	function group(type){
 		
 		Tl.changeGroup(type);
+	}
+
+	function changeOrderType(type){
+		Tl.changeOrderType(type);
 	}
 </script>
 </html>

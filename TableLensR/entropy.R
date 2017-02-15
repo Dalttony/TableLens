@@ -7,15 +7,15 @@ source(file = "silueta.R")
 
 clusterData <- function(data){
   set.seed(20)
-  ncluster <- floor(sqrt(nrow(data)))
-  #ncluster <- 7
+  #ncluster <- floor(sqrt(nrow(data)))
+  ncluster <- 3
   fit.km <- kmeans(data,ncluster,nstart = 25)
   datalabel <- fit.km$cluster
   return(datalabel)
 }
 #Data to clustering 
 dirData <- "www/data/"
-dataString <- c("carros_r.data","winequality-white_r.data","Iris.data")
+dataString <- c("iris_r.data")#,"car_r.data","winequality-white_r.data")
 clsdata <- rep()
 
 #getting the cluster by using k-means and mean shift
@@ -26,15 +26,16 @@ for( i in 1:length(dataString) ){
   
   dataReader <- read.table(file = nameData , sep=";", skip = 4,quote="")
   if(i == 1){
-    clsdatacache$data <- dataReader[,1:7]
+    clsdatacache$data <- dataReader[,1:ncol(dataReader)-1]
   }else{
     if(i ==2){
       clsdatacache$data <- dataReader[,1:ncol(dataReader)-1]
     }else{
-      clsdatacache$data <- dataReader[,2:ncol(dataReader)-1]  
+      clsdatacache$data <- dataReader[,1:ncol(dataReader)-1]  
     }
   }
-  label <-  clusterData(as.matrix(clsdatacache$data))
+  normdata <- clsdatacache$data / apply(clsdatacache$data,1,sd)
+  label <-  clusterData(as.matrix(normdata))
   
   
   #calculate the silhouette coefficient

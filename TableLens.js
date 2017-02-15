@@ -79,7 +79,7 @@ var TableLens = (function(args) {
 		_2:""
 	};
 	var conf = {
-		width: 1200,
+		width: 600,
 		height: 600,
 		min_row_height: 1,
 		max_row_height: 15,
@@ -121,28 +121,31 @@ var TableLens = (function(args) {
 	};
 
 	var silhoutte_data_name ={
-		car:'sil_ins_car_r.data',
-		iris:'sil_ins_iris.data',
-		wine:'sil_ins_winequality-white_r.data',
+		car:'norm_sil_ins_car_r.data',
+		iris:'norm_sil_ins_iris_r.data',
+		wine:'norm_sil_ins_winequality-white_r.data',
 	};
 
 	var cluster_data_name = {
-		car:'cls_car_r.data',
-		iris:'cls_iris_r.data',
-		wine:'cls_winequality-white_r.data',
+		car:'norm_cls_car_r.data',
+		iris:'norm_cls_iris_r.data',
+		wine:'norm_cls_winequality-white_r.data',
 	};
 
 	var folder_path_relative= {
-		cls7:'../../TableLensR/www/data/cls7/',
 		cls3:'../../TableLensR/www/data/cls3/',
+		cls7:'../../TableLensR/www/data/cls7/',
 		clsnsquare:'../../TableLensR/www/data/nsquare/',
 	};
 
 	var folder_path_absolute= {
-		cls7:'TableLensR/www/data/cls7/',
 		cls3:'TableLensR/www/data/cls3/',
+		cls7:'TableLensR/www/data/cls7/',
 		clsnsquare:'TableLensR/www/data/nsquare/',
 	};
+
+	var orderByColumnData  = true;
+	var orderBySilhouetteData = false;
 
 	var data_silhoutte = [];
 
@@ -200,7 +203,7 @@ var TableLens = (function(args) {
 	function reciverSilhoutte(e){
 		data_silhoutte.push(e.data.dataSilhoutte);
 		quantityoFShilhoutte ++;
-		if (quantityoFShilhoutte == 3){
+		//if (quantityoFShilhoutte == 3){
 			var http1 = getXMLHttpRequest();	
 			http1.onload = function(){
 				db["_1"] = this.responseText;
@@ -234,21 +237,21 @@ var TableLens = (function(args) {
 			//http3.open("get","cls_winequality-white.data",true)
 			http3.send();
 			quantityoFShilhoutte=0;
-			console.log(data_silhoutte[0].length,data_silhoutte[1].length,data_silhoutte[2].length)
-		}
+			console.log(data_silhoutte[0].length)
+		//}
 	}
 	var pipeline = function(){
 		var self = this;
 
-		for(var str in folder_path_relative){
-			console.log(folder_path_relative[str]+silhoutte_data_name[defaultDataBase]);
+		//for(var str in folder_path_relative){
+		console.log()
 			var wk = new Worker("js/TableLensJS/ReaderDataSilhoutte.js");
-			wk.postMessage({delimiter:dl,dataPath:folder_path_relative[str]+silhoutte_data_name[defaultDataBase]});
+			wk.postMessage({delimiter:dl,dataPath:folder_path_relative[defaultPathfFolder]+silhoutte_data_name[defaultDataBase]});
 			wk.onmessage = reciverSilhoutte;
-		}
-		var pip = new Promise(function(resolve, reject){
+		//}
+		/*var pip = new Promise(function(resolve, reject){
 		
-		});
+		});*/
 	};
 
 
@@ -262,14 +265,16 @@ var TableLens = (function(args) {
 				defaultSilhoutte =0;
 				break;
 			case "7":
-				defaultSilhoutte = 1;
+				//defaultSilhoutte = 1;
 				defaultPathfFolder = "cls7";
 				break;
 			case "nsquare":
-				defaultSilhoutte = 2
+				//defaultSilhoutte = 2
 				defaultPathfFolder = "clsnsquare";
 				break;
 		}
+		defaultSilhoutte =0;
+		console.log("silhoutte",defaultSilhoutte);
 		pipeline();
 	};
 
@@ -289,6 +294,18 @@ var TableLens = (function(args) {
 		pipeline();
 	};
 
+	this.changeOrderType = function(type){
+		switch(type){
+			case 1:
+				orderByColumnData  = true;
+				orderBySilhouetteData = false;
+				break;
+			case 2:
+				orderByColumnData  = false;
+				orderBySilhouetteData = true;
+				break;
+		}
+	};
 
 	this.setdb = function(id){
 
@@ -631,8 +648,8 @@ var TableLens = (function(args) {
 		var canvas = TableLensUtil.createElement("canvas");
 		
 		var _color = {
-			_1:["#FF9933","#003399","#99CCCC"],
-			_2:["#a6cee3","#1f78b4","#b2df8a"],
+			_1:["#FF9933","#003399","#99CCCC","#b2df8a","#a6cee3"],
+			_2:["#a6cee3","#b2df8a","#edf8b1","#FF9933","#1f78b4"],
 			_3:["#003399","#99CCCC","#FF9933"],
 			_4:["#FF9933","#99CCCC","#003399"],
 			_5:["#a6cee3","#1f78b4","#b2df8a"],
@@ -797,7 +814,11 @@ var TableLens = (function(args) {
 				}
 			}
 		}
-
+		/**
+		 * [mergeSort Algortihm for sorting data]
+		 * @param  {Integer} id [Id of column for sorting]
+		 * @return {TableLens Row}    [Rows ordered]
+		 */
 		function mergeSort(id){
 			var sorting;
 			var sorted = model.getColumn(id).getSort();
@@ -817,12 +838,24 @@ var TableLens = (function(args) {
 			function sort(a,b,sorted){
 				var result = [];
 				while(a.length > 0 && b.length > 0){
-					
+				
 					if(sorted == enumsort.asc)
-						result.push(a[0].getData()[id].getValue() < b[0].getData()[id].getValue()? a.shift() : b.shift());
+						if (orderByColumnData || a[0].getData()[id].getColumn() instanceof CategoricalColumn ){
+							result.push(a[0].getData()[id].getValue() < b[0].getData()[id].getValue()? a.shift() : b.shift());
+						}
+						else{
+							var sila = parseFloat(data_silhoutte[defaultSilhoutte][a[0].getData()[id].getIndexOut()][id])
+							var silb = parseFloat(data_silhoutte[defaultSilhoutte][b[0].getData()[id].getIndexOut()][id])
+							result.push(sila < silb ? a.shift() : b.shift());
+						}
 					if(sorted == enumsort.desc){
-
-						result.push(a[0].getData()[id].getValue() > b[0].getData()[id].getValue()? a.shift() : b.shift());
+						if (orderByColumnData || a[0].getData()[id].getColumn() instanceof CategoricalColumn)
+							result.push(a[0].getData()[id].getValue() > b[0].getData()[id].getValue()? a.shift() : b.shift());
+						else{
+							var sila = parseFloat(data_silhoutte[defaultSilhoutte][a[0].getData()[id].getIndexOut()][id])
+							var silb = parseFloat(data_silhoutte[defaultSilhoutte][b[0].getData()[id].getIndexOut()][id])
+							result.push(sila > silb ? a.shift() : b.shift());
+						}
 					}
 				}
 				return result.concat(a.length? a:b);
@@ -1168,9 +1201,15 @@ var TableLens = (function(args) {
 				grad2.addColorStop(lavggrad, this.color[1] );
 				grad2.addColorStop(1, this.color[2] );
 			
-				ctx2.fillStyle = this.color[2];
+				ctx2.fillStyle = this.color[3];
 				//ctx2.fillRect((column.offset*2) + (column.getwidth()+column.padding*2)*2,this.renderid,-lavg,1);
-				dsil = parseFloat(data_silhoutte[defaultSilhoutte][data[0].getIndexOut()][column.getIndex()])
+				var avgdatasilhoutte = 0;
+				for (var i = 0; i < data.length; i++) {
+					avgdatasilhoutte+=parseFloat(data_silhoutte[defaultSilhoutte][data[i].getIndexOut()][column.getIndex()]);
+				}
+				avgdatasilhoutte = avgdatasilhoutte/data.length;
+				//dsil = parseFloat(data_silhoutte[defaultSilhoutte][data[0].getIndexOut()][column.getIndex()])
+				dsil = avgdatasilhoutte;
 				diff = ((column.offset*2) + (column.getwidth()*2)) - ((column.offset*2) + (column.getwidth()*1.5))-5;
 				dsil_perce = Math.abs(dsil) / 1;
 				dsil_value = diff * dsil_perce;
@@ -1180,7 +1219,7 @@ var TableLens = (function(args) {
 					//calculate the distance of a column that silhouette coefficient must takes in percentage
 					ctx2.fillRect((column.offset*2) + (column.getwidth()*1.5-column.padding),this.renderid,dsil_value,1);	
 				}else{
-					ctx2.fillStyle = this.color[1];
+					ctx2.fillStyle = this.color[4];
 					ctx2.fillRect((column.offset*2) + (column.getwidth()*1.5-column.padding),this.renderid,-dsil_value,1);		
 				}
 
@@ -1255,7 +1294,7 @@ var TableLens = (function(args) {
 				var text = document.createTextNode(cols[i].getTitle());
 				var li = TableLensUtil.createElement("li")
 				li.style.padding = cols[i].padding+"px";
-				li.style.width = cols[i].getwidth()+"px";
+				
 				li.setAttribute("id","col"+i);
 				li.className ="column";
 				li.value= i;
@@ -1268,8 +1307,9 @@ var TableLens = (function(args) {
 				// li.addEventListener("mouseleave", mouseleave);
 				li.style.height = cols[i].getHeight()+"px";
 				li.style.borderLeft =  "1px solid #737373";
-				li.style.maxWidth = (cols[i].getwidth()*1.5)+"px";
-				li.style.minWidth = (cols[i].getwidth()/1.5)+"px";
+				li.style.maxWidth = Math.ceil(cols[i].getwidth())+"px";
+				li.style.width = Math.ceil(cols[i].getwidth())+"px";
+				li.style.minWidth = "10px";
 				li.appendChild(text);
 
 				var l2 = li.cloneNode(true);
@@ -1282,6 +1322,8 @@ var TableLens = (function(args) {
 				l2.style.width = 2 * cols[i].getwidth()+"px";
 				ul2.appendChild(l2);
 				ul.appendChild(li);
+
+				console.log(cols[i].getwidth());
 				/*Row*/
 				if(cols[i] instanceof IntegerColumn || cols[i] instanceof DoubleColumn ){
 					wi+=(cols[i].getwidth()+cols[i].padding);
@@ -1521,8 +1563,10 @@ var TableLens = (function(args) {
 				hue = Math.floor(hue * 10) / 10;
 				saturation = Math.floor(saturation * 10) / 10;
 				intensity = Math.floor(intensity * 10) / 10;
-				return{hue,saturation,intensity}
+				var data = {'hue':hue,'saturation':saturation,'intensity':intensity};
+				return null;
 			}
+
 			function HSI(h,s,i){
 					
 					var r,g,b;
