@@ -32,6 +32,9 @@
 			margin-top: 10px;
 
 		}
+		.over{
+			border: 2px dashed #000;	
+		}
 		.cols{
 			margin: 0;
 			padding: 0;
@@ -45,6 +48,7 @@
 			text-overflow: ellipsis;
 			background-color: #EEEEEE;
 			font: 12px arial;
+			cursor: move;
 			
 		}
 		#rolagem{
@@ -311,6 +315,11 @@
 				  	<input type="radio" name="ordertype" onclick="changeOrderType(2)" /> <a > Silhouette Data </a>
 		</fieldset>
 		<fieldset>
+			  	<legend>Normalization</legend>
+				  	<input type="radio" name="ordertype" onclick="changeNormData(1)" checked="true" /> <a> Yes </a>
+				  	<input type="radio" name="ordertype" onclick="changeNormData(2)" /> <a > Not </a>
+		</fieldset>
+		<fieldset>
 			  	<legend>Database</legend>
 				  	<input type="radio" name="db" onclick="db(1)" checked="true" /> <a> Avalição de carros </a><br/>
 				  	<input type="radio" name="db" onclick="db(2)" /> <a > Iris data base </a><br/>
@@ -457,6 +466,10 @@ window.onload = function(){
 
 	function changeOrderType(type){
 		Tl.changeOrderType(type);
+	}
+
+	function changeNormData(type) {
+		Tl.changeNormData(type);
 	}
 </script>
 </html>
