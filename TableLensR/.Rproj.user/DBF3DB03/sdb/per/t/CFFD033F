@@ -1,0 +1,17 @@
+{
+    "contents" : "\n# This is the server logic for a Shiny web application.\n# You can find out more about building applications with Shiny here:\n#\n# http://shiny.rstudio.com\n#\n\nlibrary(shiny)\nlibrary(MeanShift)\nlibrary(LPCM)\n#source(\"silueta.r\") #might be using namefunction <- dget(\"file\")\n\n\nshinyServer(function(input, output, session) {\n\n  datos <- c(\"carros_r.data\", \"winequality-white_r.data\",\"Iris.data\")\n  \n  output$plot1 <- renderPlot({\n    m <- matrix(c(1:20),nrow = 10, ncol=2)\n    plot(m,pch = 16, cex = 3, col = \"green\")\n    \n  })\n  \n  observeEvent(input$actionEnvio, {\n    #     session$sendCustomMessage(type='myCallbackHandler', input$text)\n    session$sendCustomMessage(type='myCallbackHandler', message = list(input$text, input$text1))\n  })\n  \n  #   output$Resultado <- renderPrint(input$mydata)\n  observe({\n    if(!is.null(input$mydata)){\n      idfile <-strtoi(input$mydata)\n      \n    }else{\n      idfile <- 1\n    }\n    \n    name_data <- paste(\"www/data/\",datos[idfile],sep=\"\")\n    data <- read.table(file = name_data, sep=\";\", skip = 4,quote=\"\")\n    if(idfile == 1){\n       D.data <- data[,1:7]\n    }else{\n      if(idfile ==2){\n        D.data <- data[,1:ncol(data)-1]\n      }else{\n        D.data <- data[,2:ncol(data)-1]  \n      }\n    }\n    D.tr <- t(D.data)\n    \n    D.tr <- D.tr / apply(D.tr,1,sd)\n    \n    print(dim(D.tr))\n    \n    h.cand <- quantile( dist( t( D.tr ) ), seq( 0.05, 0.40, by=0.05 ) )\n    \n    ## perform mean shift clustering with the blurring version of the algorithm\n    system.time( bms.clustering <- lapply( h.cand,\n                                           function( h ){ bmsClustering( D.tr, h=h ) } ) )\n    \n    class(bms.clustering[[1]])\n    \n    tmp.labels3 <- bms.clustering[[1]]$labels\n   # print(tmp.labels3)\n    \n   # D.dist <- as.matrix(dist(D.data))\n  #  D.data <- scale(D.data)\n    \n   # mensh <- ms(D,h=0.05)\n   # mensh1 <- bmsClustering(D.data, h=1)\n  #  ms.labels1 <- mensh1$labels\n  #  print(ms.labels1)\n   \n    session$sendCustomMessage(type = \"GettingDataSilhouetteonServer\", \"color\")\n  })\n  \n})\n",
+    "created" : 1477658891091.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1274236565",
+    "id" : "CFFD033F",
+    "lastKnownWriteTime" : 1484421113,
+    "path" : "C:/xampp/htdocs/TableLensRowUpdateFiseyes/TableLensR/server.R",
+    "project_path" : "server.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
