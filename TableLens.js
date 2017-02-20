@@ -251,7 +251,6 @@ var TableLens = (function(args) {
     
     var pipeline = function(){
         var self = this;
-         console.log(sufixData);
         //for(var str in folder_path_relative){
             var wk = new Worker("js/TableLensJS/ReaderDataSilhoutte.js");
             wk.postMessage({delimiter:dl,dataPath:folder_path_relative[defaultPathfFolder]+silhoutte_data_name[defaultDataBase]});
@@ -659,6 +658,9 @@ var TableLens = (function(args) {
 
         }
 
+        this.getViewModel = function(){
+            return viewModel;
+        }
         this.letRoll = function(){
             return rows.length > conf.height ? true:false;
         }
@@ -676,8 +678,10 @@ var TableLens = (function(args) {
         var canvas = TableLensUtil.createElement("canvas");
         
         var _color = {
-            _1:["#FF9933","#003399","#99CCCC","#b2df8a","#a6cee3"],
-            _2:["#a6cee3","#b2df8a","#edf8b1","#FF9933","#1f78b4"],
+            //_1:["#FF9933","#003399","#99CCCC","#b2df8a","#a6cee3"],
+            //position 5 is for negative value and 6 is for mapping positive value
+            _1:["#FF9933","#00441b","#99CCCC","#b2df8a","#a6cee3","#bd0026","#003399"],
+            _2:["#a6cee3","#00441b","#edf8b1","#FF9933","#1f78b4","#bd0026","#003399"],
             _3:["#003399","#99CCCC","#FF9933"],
             _4:["#FF9933","#99CCCC","#003399"],
             _5:["#a6cee3","#1f78b4","#b2df8a"],
@@ -1223,16 +1227,13 @@ var TableLens = (function(args) {
                     //color = color.color;
                     var valor = parseInt(i) / 1 ;
                     var div = 1 / (i+1);
-                    //grad.addColorStop(div," rgb("+Math.round(color.red)+","+Math.round(color.green)+","+Math.round(color.blue)+")");
-
                     dst += Math.pow((vl-avg),2)
 
                 }
-                //grad.addColorStop(1, "red");
-                //grad.addColorStop(0, "black");
-                
+                    
+                //standard deviation
                 dst = Math.sqrt(dst/len);
-                //vl = (vl * column.getwidth())/column.getMaxValue();
+                
                 
                 
                 var lavg = (avg * column.getwidth())/column.getMaxValue();
@@ -1249,44 +1250,66 @@ var TableLens = (function(args) {
                 var dstgrad =0;
                 var lavggrad = 0;
                 var diff = 0;
+                var diffDst = 0;
                 if(vlmax > 0){
-                    dstgrad = dstpos/vlmax;
+                    dstgrad = dstpos / vlmax;
                     lavggrad = lavg / vlmax;
-                    diff = lavggrad - 0.03;
+                    diffDst = vlmax - lavg;
+                    diff = lavggrad - dstgrad;
                 }
-                grad2.addColorStop(dstgrad, this.color[0] );
-                grad2.addColorStop(diff, this.color[1] );
-                grad2.addColorStop(lavggrad, this.color[1] );
+                //set the color data
+               
+               
+               if(avg < 0){
+                    grad2.addColorStop(dstgrad, this.color[5] );
+                    grad2.addColorStop(diff, this.color[5] );
+                    grad2.addColorStop(diff, this.color[5] );
+                    grad2.addColorStop(lavggrad, this.color[2] );
+               }
+
+               if(avg > 0){ 
+
+                 grad2.addColorStop(diff, this.color[6] );
+                 grad2.addColorStop(lavggrad, this.color[6] )
+
+               }
                 grad2.addColorStop(1, this.color[2] );
             
                 
                 //ctx2.fillRect((column.offset*2) + (column.getwidth()+column.padding*2)*2,this.renderid,-lavg,1);
                 var avgdatasilhoutte = 0;
+                var maxSilhoutteValue = Number.MIN_SAFE_INTEGER;
                 for (var i = 0; i < data.length; i++) {
-                    avgdatasilhoutte+=parseFloat(data_silhoutte[defaultSilhoutte][data[i].getIndexOut()][column.getIndex()]);
+                    var silValue = Math.abs(parseFloat(data_silhoutte[defaultSilhoutte][data[i].getIndexOut()][column.getIndex()]));
+
+                    if (silValue > maxSilhoutteValue ){
+                        maxSilhoutteValue = silValue;
+                    }
+                    avgdatasilhoutte+=silValue;
                 }
                 avgdatasilhoutte = avgdatasilhoutte/data.length;
+                 
                 //dsil = parseFloat(data_silhoutte[defaultSilhoutte][data[0].getIndexOut()][column.getIndex()])
                 var dsil = avgdatasilhoutte;
                 var diff = column.getwidth() - 5;
                 var dsil_percentage = Math.abs(dsil)/1;
                 var dsil_value = dsil_percentage * diff;
 
-                var psilhouteY  = (column.offset*2) + (column.getwidth()+column.padding*2)*2;
-                psilhouteY = psilhouteY -2;
-                //if the silhouette coefficient value is positive color is green
-                if(dsil >=0){
-                    if(dsil==0)
-                        dsil_value =1;
-
-                    ctx2.fillStyle = this.color[3];
-                    //calculate the distance of a column that silhouette coefficient must takes in percentage
-                    //ctx2.fillRect((column.offset*2) + (column.getwidth()*2-column.padding)*2,this.renderid,-dsil_value,1); #line for mapping left or right silhouette coefficient value
-                    ctx2.fillRect(psilhouteY,this.renderid,-dsil_value,1);   
-                }else{
-                    ctx2.fillStyle = this.color[4];
-                    ctx2.fillRect(psilhouteY,this.renderid,-dsil_value,1);      
+                var psilhouteX  = (column.offset*2) + (column.getwidth()+column.padding*2)*2;//position for mapping postion X of silhouette coefficient
+                psilhouteX = psilhouteX -2;
+                var grad = ctx2.createLinearGradient(psilhouteX,this.renderid,psilhouteX - column.getwidth() - 10,id);
+                for (var i = 0; i < data.length ; i++) {
+                   
+                    var silValue = parseFloat(data_silhoutte[defaultSilhoutte][data[i].getIndexOut()][column.getIndex()]);
+                    silValue = Math.abs(silValue) / maxSilhoutteValue;
+                    if(parseFloat(data_silhoutte[defaultSilhoutte][data[i].getIndexOut()][column.getIndex()]) >= 0){
+                        grad.addColorStop(silValue,this.color[3]);
+                    }else{
+                        grad.addColorStop(silValue,this.color[4]);
+                    }
                 }
+                  ctx2.fillStyle = grad;
+                   ctx2.fillRect(psilhouteX,this.renderid,-dsil_value,1);   
 
                 ctx2.fillStyle = grad2;
                 //ctx2.strokeStyle = grad2;
@@ -1308,7 +1331,6 @@ var TableLens = (function(args) {
 
 
             if(column instanceof CategoricalColumn || column instanceof StringColumn){
-
                     var c = Math.floor(Math.random() * data.length) - 1;
                     c=c<0?0:c;
                     var dtcat = column.getDataCompress();
@@ -1397,13 +1419,14 @@ var TableLens = (function(args) {
                 l2.style.padding = 2 * cols[i].padding+"px";
                 l2.addEventListener("click", click);
                 l2.addEventListener("dbclick", dbclick);
-                l2.addEventListener("dragstart",dragStart,false);
-                l2.addEventListener("dragenter",dragEnter,false);
-                l2.addEventListener("dragover",dragOver,false);
-                l2.addEventListener("dragleave",dragLeave,false);
-                l2.addEventListener("dragleave",dragLeave,false);
-                l2.addEventListener("dragend",dragEnd,false);
-                l2.addEventListener("drop",drop,false);
+                //ENABLE DRAG AND DROP
+                    l2.addEventListener("dragstart",dragStart,false);
+                    l2.addEventListener("dragenter",dragEnter,false);
+                    l2.addEventListener("dragover",dragOver,false);
+                    l2.addEventListener("dragleave",dragLeave,false);
+                    l2.addEventListener("dragleave",dragLeave,false);
+                    l2.addEventListener("dragend",dragEnd,false);
+                    l2.addEventListener("drop",drop,false);
                 l2.setAttribute("id","col-"+i);
                 l2.style.maxWidth =  (2 * cols[i].getwidth())+"px";
                 l2.style.minWidth =  ( 2 * cols[i].getwidth()/1.5)+"px";
@@ -1503,6 +1526,7 @@ var TableLens = (function(args) {
         var offsetX =0;
         var columnToChange=null;
         var columnToChangeD = null;
+        var noAble = false;
         function click(evt){
             if(!resize){
                 cwidth=false;
@@ -1518,45 +1542,60 @@ var TableLens = (function(args) {
         }
 
         function dragStart(evt){
-            this.style.opacity = '0.4';
-            evt.dataTransfer.effectAllowed = "move";
-            columnToChange = this;
-            columnToChangeD = TableLensUtil.ById("col-"+this.id.split("-")[1]);
-            evt.dataTransfer.setData('text/html', this.innerHTML);
+            
+            console.log(parseInt(this.id.split("-")[1]),TbLens.getViewModel().getCountDataColumn())
+            if(parseInt(this.id.split("-")[1]) < TbLens.getViewModel().getCountDataColumn()-2){
+                this.style.opacity = '0.4';
+                evt.dataTransfer.effectAllowed = "move";
+                columnToChange = this;
+                columnToChangeD = TableLensUtil.ById("col-"+this.id.split("-")[1]);
+                evt.dataTransfer.setData('text/html', this.innerHTML);
+                 noAble = false;
+            }else{
+                noAble = true;
+            }
         }
 
 
         function dragEnter(evt){
-
+             if(!noAble){
                 this.classList.add("over");
+            }
         }
 
         function dragOver(evt){
+            
             if (evt.preventDefault) {
                 evt.preventDefault(); // Necessary. Allows us to drop.
             }
-            evt.dataTransfer.dropEffect = "move";
-            return false;
+            if(!noAble){
+                evt.dataTransfer.dropEffect = "move";
+             
+            }
+               return false;
         }
 
         function dragLeave(evt){
+            if(!noAble){
                 this.classList.remove("over");
+            }
         }
 
         function drop(evt){
             if (evt.stopPropagation) {
                 evt.stopPropagation(); // Stops some browsers from redirecting.
             }
-            if (columnToChange != this){
-                TbLens.changeColumn(columnToChange.id.split("-")[1], this.id.split("-")[1]);
-                columnToChange.innerHTML = this.innerHTML;// = this.innerHTML;
-                this.innerHTML = evt.dataTransfer.getData('text/html');
-                var auxHTML = columnToChangeD.innerHTML;
-                columnToChangeD.innerHTML = TableLensUtil.ById("col-"+this.id.split("-")[1]).innerHTML;
-                TableLensUtil.ById("col-"+this.id.split("-")[1]).innerHTML = auxHTML;
+            if(!noAble){
+                if (columnToChange != this){
+                    TbLens.changeColumn(columnToChange.id.split("-")[1], this.id.split("-")[1]);
+                    columnToChange.innerHTML = this.innerHTML;// = this.innerHTML;
+                    this.innerHTML = evt.dataTransfer.getData('text/html');
+                    var auxHTML = columnToChangeD.innerHTML;
+                    columnToChangeD.innerHTML = TableLensUtil.ById("col-"+this.id.split("-")[1]).innerHTML;
+                    TableLensUtil.ById("col-"+this.id.split("-")[1]).innerHTML = auxHTML;
+                }
+                this.classList.remove("over");
             }
-            this.classList.remove("over");
-
             return false;
         }
 
@@ -2372,7 +2411,32 @@ var TableLens = (function(args) {
             var category=new Object();
             var dtcat = [];
             var value;
-            var colors = ["rgb(255, 0, 0)",
+            var colors =["#a6cee3",
+                        "#1f78b4",
+                        "#b2df8a",
+                        "#33a02c",
+                        "#fb9a99",
+                        "#e31a1c",
+                        "#fdbf6f",
+                        "#ff7f00",
+                        "#cab2d6",
+                        "#6a3d9a",
+                        "#ffff99",
+                        "#b15928",
+                        "#FF00FF",
+                        "#000040",
+                        "#400080",
+                        "#FF80FF",
+                        "#80FFFF",
+                        "#EACEF4",
+                        "#FBC50B",
+                        "#808000",
+                        "#027D55",
+                        "#6F3700",
+                        "#C0C0C0",
+                        "#000000",
+                        "#A67A39"]
+            /* ["rgb(255, 0, 0)",
                         "rgb(0, 255, 0)",
                         "rgb(128, 128, 128)",
                         "rgb(255, 0, 255)",
@@ -2398,12 +2462,14 @@ var TableLens = (function(args) {
                         "#C0C0C0",
                         "#000000",
                         "#A67A39"
-                        ]
+                        ]*/
             this._parseData = function(data){
+
                 if(category.hasOwnProperty(data.toString().trim())==false)
                     {
                         var activeColor = true;
-                        var c = Math.floor(Math.random() * colors.length) - 1;
+                        var c = Math.floor(Math.random() * colors.length - 1);
+
                         color = colors.splice(c,1);
                         category[data.toString().trim()]=color[0];
                         var c= data.toString().trim();
