@@ -1264,7 +1264,6 @@ var TableLens = (function(args) {
                     grad2.addColorStop(dstgrad, this.color[5] );
                     grad2.addColorStop(diff, this.color[5] );
                     grad2.addColorStop(diff, this.color[5] );
-                    grad2.addColorStop(lavggrad, this.color[2] );
                }
 
                if(avg > 0){ 
@@ -1297,6 +1296,7 @@ var TableLens = (function(args) {
 
                 var psilhouteX  = (column.offset*2) + (column.getwidth()+column.padding*2)*2;//position for mapping postion X of silhouette coefficient
                 psilhouteX = psilhouteX -2;
+               
                 var grad = ctx2.createLinearGradient(psilhouteX,this.renderid,psilhouteX - column.getwidth() - 10,id);
                 for (var i = 0; i < data.length ; i++) {
                    
@@ -1317,6 +1317,10 @@ var TableLens = (function(args) {
             //  ctx3.fillRect((column.offset*2) ,this.renderid,vlmax,1);
             //  ctx2.fillStyle = this.color[2];
                 ctx2.fillRect(column.offset * 2 ,this.renderid,vlmax,1);
+
+                ctx2.fillStyle ="red";
+                console.log(dstpos);
+                ctx2.fillRect((column.offset*2)+dstpos,this.renderid,1,1);
 /**/            //drawing average value
                 //ctx2.fillStyle = this.color[1];
                 //ctx2.fillRect(column.offset,id,lavg,1);
