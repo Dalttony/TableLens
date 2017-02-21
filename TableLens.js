@@ -1319,7 +1319,6 @@ var TableLens = (function(args) {
                 ctx2.fillRect(column.offset * 2 ,this.renderid,vlmax,1);
 
                 ctx2.fillStyle ="red";
-                console.log(dstpos);
                 ctx2.fillRect((column.offset*2)+dstpos,this.renderid,1,1);
 /**/            //drawing average value
                 //ctx2.fillStyle = this.color[1];
