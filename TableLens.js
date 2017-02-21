@@ -1255,7 +1255,7 @@ var TableLens = (function(args) {
                     dstgrad = dstpos / vlmax;
                     lavggrad = lavg / vlmax;
                     diffDst = vlmax - lavg;
-                    diff = lavggrad - dstgrad;
+                    diff = Math.abs(lavggrad - dstgrad);
                 }
                 //set the color data
                
@@ -1563,16 +1563,18 @@ var TableLens = (function(args) {
             }
         }
 
+
+
         function dragOver(evt){
             
             if (evt.preventDefault) {
                 evt.preventDefault(); // Necessary. Allows us to drop.
             }
+
             if(!noAble){
                 evt.dataTransfer.dropEffect = "move";
-             
             }
-               return false;
+            return false;
         }
 
         function dragLeave(evt){
